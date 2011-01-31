@@ -1,1 +1,6 @@
-A collection of MATLAB classes and scripts for my thesis.
+A collection of MATLAB classes and scripts for my thesis. Divided into a few
+directories:
+
+classes/
+data/
+scripts/
