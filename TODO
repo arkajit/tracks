@@ -6,7 +6,17 @@ you should show results for two or three different window sizes.  Use the
 current window size (which gives noisy results) and one or two larger window
 sizes (so that the largest one gives low noise but gradual transitions).
 
-3. Run your algorithm on the chromosome trajectories and plot V and D states vs
+3. Make a version of the MSD fitting approach that allows V and D at the same 
+time (i.e. fit the MSD vs. timelag data, still within a sliding window along the track, 
+with the velocity plus flow model MSD = v^2 * t^2 + 6Dt and report the fit values of 
+V and D).
+
+4. Repeat tests on simulated tracks of the same length and expected transitions as 
+the chromosome tracks (~100 steps total, with one transition from 0 velocity to 3 um/min 
+velocity, then a second transition to 10 um/min velocity, then a third transition back to 0
+velocity).
+
+5. Run your algorithm on the chromosome trajectories and plot V and D states vs
 time for each chromosome.  I've attached a .mat file with the tracks from one
 experiment.  The tracks matrix is the usual 6 columns, with all 25 tracks in the
 same matrix.  The X,Y,Z coordinates are in um and the time coordinate (last
