@@ -1,0 +1,20 @@
+1. Make figures similar to 3.9 and 3.10, but now vary the transition probability
+between states instead of varying the Vmax and Dmax.
+
+2. For all of the rolling MSD figures (figures 3.11, 3.13, 3.14, 3.15, 3.18),
+you should show results for two or three different window sizes.  Use the
+current window size (which gives noisy results) and one or two larger window
+sizes (so that the largest one gives low noise but gradual transitions).
+
+3. Run your algorithm on the chromosome trajectories and plot V and D states vs
+time for each chromosome.  I've attached a .mat file with the tracks from one
+experiment.  The tracks matrix is the usual 6 columns, with all 25 tracks in the
+same matrix.  The X,Y,Z coordinates are in um and the time coordinate (last
+column) is in frame number.  What I usually do to plot the tracks is plot the
+distance between the current track position and the pole (given in
+info.manualpole) versus the time after nuclear envelope breakdown (NEBD), which
+you can calculate using the frame number at which NEBD occurs (info.nebd) and
+the time between frames in seconds (info.timestep).  See the attached figure,
+which came from these tracks.  You could make a similar plot with all the
+chromosomes' V states on the y axis and time after NEBD on the x axis.  For your
+algorithm, try using Vmax = 12 um/min = 0.2 um/s and Dmax = 0.1 um^2/s.
