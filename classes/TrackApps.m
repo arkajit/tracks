@@ -17,15 +17,20 @@ classdef TrackApps
       r = t+s;
     end
 
-
     % Implements Arcizet et. al.'s TRAnSpORT algorithm which computes a
-    % rolling-average MSD over M frames
-    % Input: track (a Track Object)
-    %       M = size of window in frames
-    %       sig_alpha = tolerance on alpha to declare active state
-    %       sig_phi = tolerance on angle correlation to declare active state 
-    %  If the last three parameters are not supplied, will use the defaults used
-    %  in Arcizet et. al.
+    % rolling-average MSD over M frames.
+    % 
+    % @param track Track
+    % @param M int - size of window in frames
+    % @param sig_alpha double - tolerance on alpha to delcare active state
+    % @param sig_phi double - tolerance on angle correlation to declare active
+    % 
+    % @return D - predicted diffusion coefficients
+    % @return V - predicted velocity magnitudes
+    % @return pA - predicted active/passive states
+    % 
+    % If the last three parameters are not supplied, will use the defaults used
+    % in Arcizet et. al.
     % Instead of computing MSD versus time (t), do it versus step # (n).
     % NOTE(arkajit): Thus this implicitly assumes that tau = 1       
     function [D, V, pA] = TRANSPORT(track, M, sig_alpha, sig_phi)
@@ -57,17 +62,19 @@ classdef TrackApps
       end
     end
 
+    % For a trajectory matrix, do a polynomial fit of its MSD curve over a
+    % certain subwindow.
     function [beta] = plfit(R, i, M, b0)
       msdR = TrackApps.msds3D(R, i, M);
       X = (1:size(msdR, 1))';
-      beta = nlinfit(X, msdR, @TrackApps.powerlaw, b0, TrackApps.opts);
-      plot(X, [msdR, TrackApps.powerlaw(beta, X)]);
-    end
+      beta = nlinfit(X, msdR, @powerlaw, b0, TrackApps.opts);
+      plot(X, [msdR, powerlaw(beta, X)]);
 
-    function [yhat] = powerlaw(b, X)
-      A = b(1);
-      alpha = b(2);
-      yhat = A * X.^alpha;
+      function [yhat] = powerlaw(b, X)
+        A = b(1);
+        alpha = b(2);
+        yhat = A * X.^alpha;
+      end
     end
 
     function [stddev] = anglecorr(angles, i, M)
@@ -75,18 +82,33 @@ classdef TrackApps
       lower = max(1, i - floor(M/2));
       upper = min(T, i + floor(M/2));
 
-      f_msd = TrackApps.getMSD(angles(lower:upper));
-      stddev = f_msd(floor(M/4)); % Arcizet et. al. use M/4 as their lag
+      msdFunc = TrackApps.getMSD(angles(lower:upper));
+      stddev = msdFunc(floor(M/4)); % Arcizet et. al. use M/4 as their lag
     end
 
+    % For a 3D trajectory, compute the MSDs for a particular window of points
+    % within it.
+    %
+    % @param R mat - 3D trajectory matrix
+    % @param i int - frame index for the window's center
+    % @param M int - length of the window in frames
+    % @return msdR vec - 3D MSDs for each possible step size
     function [msdR] = msds3D(R, i, M)
       T = size(R, 1);
       lower = max(1, i - floor(M/2));
       upper = min(T, i + floor(M/2));
       msds = TrackApps.allMSDs3D(R(lower:upper,:));
-      msdR = sum(msds, 2);
+
+      % 3D MSD is sum of MSDs in each direction since random walkers are independent
+      msdR = sum(msds, 2); 
     end
 
+    % For a 3D trajectory, consider the x,y, and z trajectories independently
+    % and compute all the MSDs for each.
+    %
+    % @param R mat - 3D trajectory matrix, Tx3 with each column representing a
+    %            separate trajectory
+    % @return msds - matrix of msds, (T-1)x3
     function [msds] = allMSDs3D(R)
       T = length(R);
       msds = zeros(T-1,3);
@@ -95,15 +117,27 @@ classdef TrackApps
       end
     end
 
+    % For a given trajectory of T points, compute all MSDs for points that are
+    % 1, 2, ..., T-1 steps apart within the trajectory.
+    %
+    % @param x - trajectory vector, Tx1
+    % @return msds - vector of msds, (T-1)x1
     function [msds] = allMSDs(x)
       T = length(x);
       msds = zeros(T-1,1);
-      msd = TrackApps.getMSD(x);
+      msdFunc = TrackApps.getMSD(x);
       for i=1:T-1
-        msds(i) = msd(i);
+        msds(i) = msdFunc(i);
       end
     end
 
+    % For any set of data points x, compute and return the MSD function for it.
+    % This computes a time average within an individual trajectory, NOT an
+    % ensemble average over a set of trajectories.
+    % 
+    % @param x - trajectory vector
+    % @return msd - function mapping number of steps, n, to the mean square
+    %               displacement of x over n steps
     function [msd] = getMSD(x)
       T = length(x);
       msd = @my_msd;     
