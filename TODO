@@ -8,6 +8,8 @@ between states instead of varying the Vmax and Dmax.
 you should show results for two or three different window sizes.  Use the
 current window size (which gives noisy results) and one or two larger window
 sizes (so that the largest one gives low noise but gradual transitions).
+Also, you could consider a max window size dictated by how often transitions
+happen between D,V states.
 
 3. Make a version of the MSD fitting approach that allows V and D at the same 
 time (i.e. fit the MSD vs. timelag data, still within a sliding window along the track, 
@@ -31,6 +33,11 @@ the time between frames in seconds (info.timestep).  See the attached figure,
 which came from these tracks.  You could make a similar plot with all the
 chromosomes' V states on the y axis and time after NEBD on the x axis.  For your
 algorithm, try using Vmax = 12 um/min = 0.2 um/s and Dmax = 0.1 um^2/s.
+
+6. Consider adding noise to the step observations and improving the models to
+support this.
+
+7. Explore smarter model selection approaches as well.
 
 Code Improvement
 ================
