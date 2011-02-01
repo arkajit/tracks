@@ -1,3 +1,6 @@
+Research Questions
+==================
+
 1. Make figures similar to 3.9 and 3.10, but now vary the transition probability
 between states instead of varying the Vmax and Dmax.
 
@@ -28,3 +31,10 @@ the time between frames in seconds (info.timestep).  See the attached figure,
 which came from these tracks.  You could make a similar plot with all the
 chromosomes' V states on the y axis and time after NEBD on the x axis.  For your
 algorithm, try using Vmax = 12 um/min = 0.2 um/s and Dmax = 0.1 um^2/s.
+
+Code Improvement
+================
+
+1) Factor out random track generating utility functions into a separate class.
+2) Make TRANSPORT algorithm its own class and make swapping out different
+   algorithms easier.
