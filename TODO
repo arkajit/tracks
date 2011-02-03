@@ -36,6 +36,7 @@ algorithm, try using Vmax = 12 um/min = 0.2 um/s and Dmax = 0.1 um^2/s.
 
 6. Consider adding noise to the step observations and improving the models to
 support this.
+When generating trajectory, add a noise element drawn from N(0, \sigma_err).
 
 7. Explore smarter model selection approaches as well.
 
@@ -45,3 +46,5 @@ Code Improvement
 1) Factor out random track generating utility functions into a separate class.
 2) Make TRANSPORT algorithm its own class and make swapping out different
    algorithms easier.
+3) Also factor out extra logic from Track into separate algorithm classes for
+   HMM code.
