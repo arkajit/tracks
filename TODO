@@ -1,27 +1,31 @@
 Research Questions
 ==================
 
-1. Make figures similar to 3.9 and 3.10, but now vary the transition probability
+- Make figures similar to 3.9 and 3.10, but now vary the transition probability
 between states instead of varying the Vmax and Dmax.
 
-2. For all of the rolling MSD figures (figures 3.11, 3.13, 3.14, 3.15, 3.18),
+- For all of the rolling MSD figures (figures 3.11, 3.13, 3.14, 3.15, 3.18),
 you should show results for two or three different window sizes.  Use the
 current window size (which gives noisy results) and one or two larger window
 sizes (so that the largest one gives low noise but gradual transitions).
 Also, you could consider a max window size dictated by how often transitions
 happen between D,V states.
 
-3. Make a version of the MSD fitting approach that allows V and D at the same 
+- Make a version of the MSD fitting approach that allows V and D at the same 
 time (i.e. fit the MSD vs. timelag data, still within a sliding window along the track, 
 with the velocity plus flow model MSD = v^2 * t^2 + 6Dt and report the fit values of 
 V and D).
 
-4. Repeat tests on simulated tracks of the same length and expected transitions as 
+- Generate a graph of deltaTs vs deltaVs where deltaT is the time to transition
+  when there is a deltaV change in the x velocity. Last attempt was buggy.
+  Rethink.
+
+- Repeat tests on simulated tracks of the same length and expected transitions as 
 the chromosome tracks (~100 steps total, with one transition from 0 velocity to 3 um/min 
 velocity, then a second transition to 10 um/min velocity, then a third transition back to 0
 velocity).
 
-5. Run your algorithm on the chromosome trajectories and plot V and D states vs
+- Run your algorithm on the chromosome trajectories and plot V and D states vs
 time for each chromosome.  I've attached a .mat file with the tracks from one
 experiment.  The tracks matrix is the usual 6 columns, with all 25 tracks in the
 same matrix.  The X,Y,Z coordinates are in um and the time coordinate (last
@@ -34,11 +38,11 @@ which came from these tracks.  You could make a similar plot with all the
 chromosomes' V states on the y axis and time after NEBD on the x axis.  For your
 algorithm, try using Vmax = 12 um/min = 0.2 um/s and Dmax = 0.1 um^2/s.
 
-6. Consider adding noise to the step observations and improving the models to
+- Consider adding noise to the step observations and improving the models to
 support this.
 When generating trajectory, add a noise element drawn from N(0, \sigma_err).
 
-7. Explore smarter model selection approaches as well.
+- Explore smarter model selection approaches as well.
 
 Code Improvement
 ================
