@@ -6,17 +6,6 @@ classdef TrackApps
 
   methods (Static)
 
-    function [Ds, Vs] = testOneTrans(S, D, deltaV, tau)
-      r = TrackApps.getOneTransTrack(S, D, deltaV, tau);
-      [~, Ds, Vs]  = r.recover(D, deltaV, 20);
-    end
-
-    function [r] = getOneTransTrack(S, D, deltaV, tau)
-      t = Track.randomTrack(D*ones(S,1), zeros(S,3), tau);
-      s = Track.randomTrack(D*ones(S,1), repmat([deltaV 0 0], S, 1), tau);
-      r = t+s;
-    end
-
     % Implements Arcizet et. al.'s TRAnSpORT algorithm which computes a
     % rolling-average MSD over M frames.
     % 
