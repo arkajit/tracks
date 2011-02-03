@@ -8,16 +8,16 @@ classdef TrackAnalyzer
 
   properties
     k       % number of trials to average error measurements over
-    nbins   % number of bins to use in track recovery
-    ntrans  % number of times to transition in random test trajectories
+    nBins   % number of bins to use in track recovery
+    nTrans  % number of times to transition in random test trajectories
   end
 
   methods
     % constructor
-    function self = TrackAnalyzer(k, nbins, ntrans)
+    function self = TrackAnalyzer(k, nBins, nTrans)
       self.k = k;
-      self.nbins = nbins;
-      self.ntrans = ntrans;
+      self.nBins = nBins;
+      self.nTrans = nTrans;
     end
 
     % analyze fixed V^2 *tau / 2D ratio as you vary track size
@@ -26,14 +26,14 @@ classdef TrackAnalyzer
       Dmax = 1;
       errS = zeros(Smax,1);
 
-      for s=2*self.ntrans:Smax
+      for s=2*self.nTrans:Smax
         if mod(s,10) == 0
           disp(sprintf('s = %d', s)); % progress report
         end
 
         for i=1:self.k
-          track = Track.fixedRandTrack(s, self.ntrans, Dmax, Vmax, tau);
-          errS(s) = errS(s) + track.recover(Dmax, Vmax, self.nbins);
+          track = RandomTracks.fixedTransitions(s, self.nTrans, Dmax, Vmax, tau);
+          errS(s) = errS(s) + track.recover(Dmax, Vmax, self.nBins);
         end
       end
 
@@ -57,8 +57,8 @@ classdef TrackAnalyzer
         tau = taus(n);
 
         for i=1:self.k
-          track = Track.fixedRandTrack(S, self.ntrans, Dmax, Vmax, tau);
-          errTau(n) = errTau(n) + track.recover(Dmax, Vmax, self.nbins);
+          track = RandomTracks.fixedTransitions(S, self.nTrans, Dmax, Vmax, tau);
+          errTau(n) = errTau(n) + track.recover(Dmax, Vmax, self.nBins);
         end
       end
 
@@ -82,8 +82,8 @@ classdef TrackAnalyzer
         Vmax = vels(n);
 
         for i=1:self.k
-          track = Track.fixedRandTrack(S, self.ntrans, Dmax, Vmax, tau);
-          errRat(n) = errRat(n) + track.recover(Dmax, Vmax, self.nbins);
+          track = RandomTracks.fixedTransitions(S, self.nTrans, Dmax, Vmax, tau);
+          errRat(n) = errRat(n) + track.recover(Dmax, Vmax, self.nBins);
         end
       end
 
@@ -105,10 +105,10 @@ classdef TrackAnalyzer
         vel = [deltaV 0 0]; % just turn on velocity in x direction
 
         for i=1:self.k
-          t = Track.randomTrack(D*ones(S, 1), zeros(S,3), tau);
-          s = Track.randomTrack(D*ones(S, 1), repmat(vel, S, 1), tau);
+          t = RandomTracks.from(D*ones(S, 1), zeros(S,3), tau);
+          s = RandomTracks.from(D*ones(S, 1), repmat(vel, S, 1), tau);
           r = t+s;
-          [~, Ds, Vs] = r.recover(D, deltaV, self.nbins);
+          [~, Ds, Vs] = r.recover(D, deltaV, self.nBins);
 
           vx = Vs(:,1); % just care about the x
           [b, m] = unique(vx);
