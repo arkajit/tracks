@@ -47,8 +47,11 @@ classdef TrackExperiments
     end
 
     function [D1, V1, D2, V2, pA] = runAlgs(track, Dmax, Vmax)
-      disp('Running Transport');
-      tic; [D2, V2, pA] = TrackApps.TRANSPORT(track); toc
+      %disp('Running Transport');
+      %tic; [D2, V2, pA] = TrackApps.TRANSPORT(track); toc
+      disp('Running MSD');
+      tic; [D2, V2] = TrackApps.MSD(track); toc
+      pA = 1;
       disp('Running HMM');
       tic; [D1, V1] = track.solve(Dmax, Vmax, TrackExperiments.nbins); toc
     end
@@ -93,8 +96,9 @@ classdef TrackExperiments
       errBins = zeros(size(bins));
       for i=1:length(bins)
         b = bins(i);
-        [~, ~, e] = t.solve(Dmax, Vmax, b)
+        [~, ~, e] = t.solve(Dmax, Vmax, b);
         errBins(i) = e;
+      end
     end
 
   end

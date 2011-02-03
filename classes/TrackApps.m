@@ -34,10 +34,13 @@ classdef TrackApps
     % Instead of computing MSD versus time (t), do it versus step # (n).
     % NOTE(arkajit): Thus this implicitly assumes that tau = 1       
     function [D, V, pA] = TRANSPORT(track, M, sig_alpha, sig_phi)
-      if (nargin == 1)
-        M = 40;
+      if (nargin <= 2)
         sig_alpha = 0.3;
         sig_phi = 0.6;
+      end
+
+      if (nargin == 1)
+        M = 40; 
       end
 
       R = track.positions;
@@ -48,7 +51,7 @@ classdef TrackApps
       pA = zeros(T, 1);
     
       for i=1:T
-        beta = TrackApps.plfit(R, i, M, [1; 1]);  % arbitrary initial condition
+        beta = TrackApps.plfit(R, i, M, [1; 1], @TrackApps.powerlaw);  % arbitrary initial condition
         A = beta(1);
         alpha = beta(2);
         phi = TrackApps.anglecorr(track.angles, i, M);
@@ -62,19 +65,46 @@ classdef TrackApps
       end
     end
 
+    function [D, V] = MSD(track, M)
+      if (nargin == 1)
+        M = 40;
+      end
+
+      R = track.positions;
+      T = size(R, 1);
+
+      D = zeros(T, 1);
+      V = zeros(T, 1);
+  
+      for i=1:T
+        beta = TrackApps.plfit(R, i, M, [1; 1], @TrackApps.msdlaw);
+        A = beta(1);
+        B = beta(2);
+        D(i) = A/6;
+        V(i) = sqrt(B);
+      end
+    end
+
     % For a trajectory matrix, do a polynomial fit of its MSD curve over a
     % certain subwindow.
-    function [beta] = plfit(R, i, M, b0)
+    function [beta] = plfit(R, i, M, b0, fitFunc)
       msdR = TrackApps.msds3D(R, i, M);
       X = (1:size(msdR, 1))';
-      beta = nlinfit(X, msdR, @powerlaw, b0, TrackApps.opts);
-      plot(X, [msdR, powerlaw(beta, X)]);
+      beta = nlinfit(X, msdR, fitFunc, b0, TrackApps.opts);
+      plot(X, [msdR, fitFunc(beta, X)]);
+    end
 
-      function [yhat] = powerlaw(b, X)
-        A = b(1);
-        alpha = b(2);
-        yhat = A * X.^alpha;
-      end
+    function [yhat] = powerlaw(b, X)
+      A = b(1);
+      alpha = b(2);
+      yhat = A * X.^alpha;
+    end
+
+    % D = A/6, V = sqrt(B)
+    function [yhat] = msdlaw(b, X) 
+      A = b(1);
+      B = b(2);
+      yhat = A * X + B * X.^2;
     end
 
     function [stddev] = anglecorr(angles, i, M)
