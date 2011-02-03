@@ -43,8 +43,7 @@ When generating trajectory, add a noise element drawn from N(0, \sigma_err).
 Code Improvement
 ================
 
-1) Factor out random track generating utility functions into a separate class.
-2) Make TRANSPORT algorithm its own class and make swapping out different
+- Make TRANSPORT algorithm its own class and make swapping out different
    algorithms easier.
-3) Also factor out extra logic from Track into separate algorithm classes for
+- Also factor out extra logic from Track into separate algorithm classes for
    HMM code.
