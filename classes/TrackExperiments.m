@@ -9,39 +9,37 @@ classdef TrackExperiments
   methods (Static)
 
     function [t, D1, D2, V1, V2] = pureFlow()
-      r = Track.randomFlowTrack(TrackExperiments.S/2, [-0.58 1.4 -1.76], ...
-                                TrackExperiments.tau);
-      s = Track.randomFlowTrack(TrackExperiments.S/2, [1.5, -0.7, 0.2], ...
-                                TrackExperiments.tau);
+      r = RandomTracks.flow(TrackExperiments.S/2, [-0.58 1.4 -1.76], ...
+                            TrackExperiments.tau);
+      s = RandomTracks.flow(TrackExperiments.S/2, [1.5, -0.7, 0.2], ...
+                            TrackExperiments.tau);
       t = r+s;
-      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 0, 2);
 
+      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 0, 2);
       TrackExperiments.plotFlow(t, V1, V2);
     end
 
     function [t, D1, D2, V1, V2] = pureDiffusion()
-      t = Track.randomDiffusiveTrack(TrackExperiments.S, 1, ...
-                                     TrackExperiments.tau);
-      
+      t = RandomTracks.diffusion(TrackExperiments.S, 1, TrackExperiments.tau);
+
       [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 1, 0);
-  
       TrackExperiments.plotDiffusion(t, D1, D2);
     end
 
     function [t, D1, D2, V1, V2] = stepTrack()
-      t = Track.randomStepTrack(TrackExperiments.S, 0.5, 0, 3, ...
-                                TrackExperiments.tau);
-      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 1, 5);
+      t = RandomTracks.step(TrackExperiments.S, 0.5, 0, 3, ...
+                            TrackExperiments.tau);
 
+      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 1, 5);
       TrackExperiments.plotDiffusion(t, D1, D2);
       TrackExperiments.plotFlow(t, V1, V2);
     end
 
-    function [t, D1, D2, V1, V2] = complexTrack(n)
-      t = Track.fixedRandTrack(TrackExperiments.S, n, 2, 5, ...
-                               TrackExperiments.tau);
-      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 2, 5);
+    function [t, D1, D2, V1, V2] = complexTrack(nTrans)
+      t = RandomTracks.fixedTransitions(TrackExperiments.S, nTrans, 2, 5, ...
+                                        TrackExperiments.tau);
 
+      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 2, 5);
       TrackExperiments.plotDiffusion(t, D1, D2);
       TrackExperiments.plotFlow(t, V1, V2);
     end

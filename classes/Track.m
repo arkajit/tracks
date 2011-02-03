@@ -1,6 +1,8 @@
 classdef Track
-  %Track represents an observed trajectory of a particle
-  %   Detailed explanation goes here
+  % Track represents an observed trajectory of a particle.
+  %   Contains the steps and angles that describe the trajectory. Also may
+  %   contain the true motion parameters, D and V, that generated the
+  %   trajectory.
     
   properties
     T          % number of position observations
@@ -40,15 +42,22 @@ classdef Track
       end
     end
 
-    % observe: get the steps and angles from a trajectory
-    function [T, steps, angles] = observe(track)
-      T = size(track,1);
+    % From a trajectory (position time series), compute its length and the
+    % sequence of steps and angles.
+    % 
+    % @param trajectory mat Tx3
+    % 
+    % @return T int - number of points in the trajectory
+    % @return steps mat (T-1)x3 - steps in the trajectory
+    % @return angles mat (T-2)x3 - angles in the trajectory
+    function [T, steps, angles] = observe(trajectory)
+      T = size(trajectory,1);
       steps = zeros(T-1, 3);
       angles = zeros(T-2, 1);
 
       for i=1:T-1
-        steps(i,:) = Track.epsround(track(i+1,:) - track(i,:));
-        % to prevent precision errors
+        % to prevent precision errors, round within an epsilon
+        steps(i,:) = Track.epsround(trajectory(i+1,:) - trajectory(i,:));
       end
 
       for i=1:T-2
@@ -58,106 +67,13 @@ classdef Track
       end
     end
 
-    % gentrack: from a vector of Ds and a matrix of Vs
-    % generate a random track that obeys these parameters (not a Track, but
-    % a matrix of positions
-    % length(D) = length(V) (>3) = number of steps to generate
-    function pos = genTrack(D, V, tau)
-      T = size(D,1)+1; % one less step than number of position observations
-
-      if size(V,1) ~= T-1 % there should be T-1 steps
-        pos = []; % dimensions don't match, abort
-        return;
-      else
-        pos = zeros(T,3);
-        pos(1,:) = rand(1,3); % start at random point in unit box
-      end
-
-      for t=1:T-1
-        pos(t+1,:) = pos(t,:) + sqrt(2*D(t)*tau)*randn(1,3) + tau*V(t,:);
-      end
-    end
-
-    function [self] = fromPositions(positions, tau)
+    function [self] = fromTrajectory(trajectory, tau)
       self = Track();
-      self.positions = positions;
+      self.positions = trajectory;
       self.tau = tau;
-      [self.T, self.steps, self.angles] = Track.observe(positions);
+      [self.T, self.steps, self.angles] = Track.observe(trajectory);
       self.D = NaN(self.T-1,1);
       self.V = NaN(self.T-1,3);
-    end
-
-    function [self] = randomTrack(D, V, tau)
-      self = Track.fromPositions(Track.genTrack(D, V, tau), tau);
-      self.D = D;
-      self.V = V;
-    end
-
-    function [self] = randomDiffusiveTrack(S, D, tau)
-      self =  Track.randomTrack(D*ones(S,1), zeros(S,3), tau);
-    end
-
-    function [self] = randomFlowTrack(S, vel, tau)
-      self = Track.randomTrack(zeros(S,1), repmat(vel, S, 1), tau);
-    end
-
-    function [self] = randomStepTrack(S, D, V0, V1, tau)
-      n = randi([floor(S/4) floor(3*S/4)]); % random step point in middle
-      t = Track.randomTrack(D*ones(n,1), repmat([V0 0 0], n, 1), tau);
-      s = Track.randomTrack(D*ones(S-n, 1), repmat([V1 0 0], S-n, 1), tau);
-      self = t + s;
-    end
-
-    % generate a random track with a fixed number of transitions, n, for D, V
-    function [self] = fixedRandTrack(S, n, Dmax, Vmax, tau)
-      D = Dmax*rand(S,1);
-      V = 2*Vmax*rand(S,3)-Vmax;
-
-      r = randperm(S);
-      nums = sort(r(1:n));
-      last = 1;
-      for i=nums
-        D(last:i-1) = D(last);
-        last = i;
-      end;
-      D(last:end) = D(i);
-   
-      r = randperm(S);
-      nums = sort(r(1:n));
-      last = 1;
-      for i=nums
-        V(last:i-1,:) = repmat(V(last,:), i-last, 1);
-        last = i;
-      end;
-      V(last:end,:) = repmat(V(last,:), S-last+1, 1);
-
-      self = Track.randomTrack(D,V,tau);
-    end
-
-    % S = number of steps (T-1), tau
-    function [self] = randTrack(S, Dmax, Vmax, tau)
-      D = Dmax*rand(S,1);
-      V = 2*Vmax*rand(S,3)-Vmax;
-
-      % smooth out transitions
-      i = 1;
-      while i < 0.9*S
-        j = randi([i,S]);
-        D(i:j-1) = D(i);
-        i = j;
-      end
-      D(i:end) = D(i);
-
-      % do V transitions independently of D
-      i = 1;
-      while i < 0.9*S
-        j = randi([i,S]);
-        V(i:j-1,:) = repmat(V(i,:), j-i, 1);
-        i = j;
-      end
-      V(i:end,:) = repmat(V(i,:), S-i+1, 1);
-
-      self = Track.randomTrack(D,V,tau);
     end
 
   end
