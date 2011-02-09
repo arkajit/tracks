@@ -44,10 +44,11 @@ When generating trajectory, add a noise element drawn from N(0, \sigma_err).
 
 - Explore smarter model selection approaches as well.
 
+- Can we use recursive binning to get more accurate results? Or perhaps use
+  estimates from MSD approaches as a starting point for Dmax and Vmax?
+
 Code Improvement
 ================
 
 - Make TRANSPORT algorithm its own class and make swapping out different
    algorithms easier.
-- Also factor out extra logic from Track into separate algorithm classes for
-   HMM code.
