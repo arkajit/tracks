@@ -2,7 +2,7 @@ classdef TrackExperiments
 
   properties (Constant)
     S = 1000;
-    nbins = 15;
+    nBins = 15;
     tau = 1;
   end
 
@@ -51,7 +51,8 @@ classdef TrackExperiments
       tic; [D2, V2] = TrackApps.MSD(track); toc
       pA = 1;
       disp('Running HMM');
-      tic; [D1, V1] = track.solve(Dmax, Vmax, TrackExperiments.nbins); toc
+			h = HMMSolver(Dmax, Vmax, TrackExperiments.nBins);
+      tic; [D1, V1] = h.solve(track); toc
     end
 
     function [] = plotDiffusion(track, D1, D2)
