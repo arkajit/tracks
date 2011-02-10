@@ -15,14 +15,14 @@ classdef TrackExperiments
                             TrackExperiments.tau);
       t = r+s;
 
-      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 0, 2);
+      [D1, V1, D2, V2] = TrackExperiments.runAlgs(t, 0, 2);
       TrackExperiments.plotFlow(t, V1, V2);
     end
 
     function [t, D1, D2, V1, V2] = pureDiffusion()
       t = RandomTracks.diffusion(TrackExperiments.S, 1, TrackExperiments.tau);
 
-      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 1, 0);
+      [D1, V1, D2, V2] = TrackExperiments.runAlgs(t, 1, 0);
       TrackExperiments.plotDiffusion(t, D1, D2);
     end
 
@@ -30,7 +30,7 @@ classdef TrackExperiments
       t = RandomTracks.step(TrackExperiments.S, 0.5, 0, 3, ...
                             TrackExperiments.tau);
 
-      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 1, 5);
+      [D1, V1, D2, V2] = TrackExperiments.runAlgs(t, 1, 5);
       TrackExperiments.plotDiffusion(t, D1, D2);
       TrackExperiments.plotFlow(t, V1, V2);
     end
@@ -39,17 +39,15 @@ classdef TrackExperiments
       t = RandomTracks.fixedTransitions(TrackExperiments.S, nTrans, 2, 5, ...
                                         TrackExperiments.tau);
 
-      [D1, V1, D2, V2, pA] = TrackExperiments.runAlgs(t, 2, 5);
+      [D1, V1, D2, V2] = TrackExperiments.runAlgs(t, 2, 5);
       TrackExperiments.plotDiffusion(t, D1, D2);
       TrackExperiments.plotFlow(t, V1, V2);
     end
 
-    function [D1, V1, D2, V2, pA] = runAlgs(track, Dmax, Vmax)
-      %disp('Running Transport');
-      %tic; [D2, V2, pA] = TrackApps.TRANSPORT(track); toc
+    function [D1, V1, D2, V2] = runAlgs(track, Dmax, Vmax)
       disp('Running MSD');
-      tic; [D2, V2] = TrackApps.MSD(track); toc
-      pA = 1;
+			m = MSDSolver();
+      tic; [D2, V2] = m.solve(track); toc
       disp('Running HMM');
 			h = HMMSolver(Dmax, Vmax, TrackExperiments.nBins);
       tic; [D1, V1] = h.solve(track); toc
@@ -80,24 +78,6 @@ classdef TrackExperiments
       legend('Rolling MSD', 'Actual');
       ylabel('Velocity Magnitude ([dist]/s)');
       xlabel('n (# steps)');
-    end
-
-    %------
-
-    % n = # transitions
-    function [errBins] = varyBins(n)
-      Dmax = 1;
-      Vmax = 2;
-      t = Track.fixedRandTrack(TrackExperiments.S, n, Dmax, Vmax, ...
-                               TrackExperiments.tau);
-  
-      bins = 10:30;
-      errBins = zeros(size(bins));
-      for i=1:length(bins)
-        b = bins(i);
-        [~, ~, e] = t.solve(Dmax, Vmax, b);
-        errBins(i) = e;
-      end
     end
 
   end
