@@ -50,5 +50,4 @@ When generating trajectory, add a noise element drawn from N(0, \sigma_err).
 Code Improvement
 ================
 
-- Make TRANSPORT algorithm its own class and make swapping out different
-   algorithms easier.
+- Write more tests / sample scripts.
