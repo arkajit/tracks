@@ -47,6 +47,16 @@ classdef RandomTracks
       track.V = V;
     end
 
+		function [track] = random(nSteps)
+			if (nargin == 0)
+				nSteps = 100;
+			end
+			Dmax = randi(20) / 10;
+			Vmax = randi(100) / 10;
+			tau = 1;
+			track = RandomTracks.fromParams(nSteps, Dmax, Vmax, tau);
+		end
+
     function [track] = diffusion(nSteps, diffusionCoeff, tau)
       D = diffusionCoeff*ones(nSteps,1);
       V = zeros(S, 3);
