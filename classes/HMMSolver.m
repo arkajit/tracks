@@ -5,6 +5,7 @@ classdef HMMSolver
 		Dmax
 		Vmax
 		nBins
+		odds
 		hmm
 	end	
 
@@ -34,8 +35,8 @@ classdef HMMSolver
         mus = mubins + muincr/2; 
       end
 
-			% uniform prior, 10:1 odds against switching	
-			self.hmm = fact_hmm(mus, sigmas, [], [], 10, 10);
+			% uniform prior
+			self.hmm = fact_hmm(mus, sigmas, [], [], self.odds, self.odds);
 		end
 
 		% Using selected HMM, perform inference to find the most likely sequence of
@@ -77,10 +78,15 @@ classdef HMMSolver
 	methods
 		
 		% constructor
-		function [self] = HMMSolver(Dmax, Vmax, nBins) 
+		function [self] = HMMSolver(Dmax, Vmax, nBins, odds) 
 			self.Dmax = Dmax;
 			self.Vmax = Vmax;
 			self.nBins = nBins;
+			if (nargin == 4)
+				self.odds = odds;
+			else
+				self.odds = 10;
+			end
 		end
 
 		% Solve a track for its underlying motion parameters using a factorial HMM.

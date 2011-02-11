@@ -56,3 +56,5 @@ Code Improvement
 ================
 
 - Write more tests / sample scripts.
+- Generalize the plot visualizations in TrackExperiments to make it easy to
+  compare two or more predictions for timeseries
