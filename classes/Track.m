@@ -107,6 +107,21 @@ classdef Track
       title(sprintf('3D particle trajectory from T=%d to T=%d', from, to));
     end
 
+		function plotDiffusion(self) 
+			figure;
+			plot(self.D);
+      ylabel('Diffusion Coefficient ([dist]^2/s)')
+      xlabel('n (# steps)');
+		end
+
+		function plotVelocity(self)
+			figure;
+			plot(self.V);
+			legend('v_x', 'v_y', 'v_z');
+      ylabel('Instantaneous Velocities in each direction ([dist]/s)');
+      xlabel('n (# steps)');
+		end
+
     % show summary statistics for trajectory between from and to
     function summarize(self, varargin)
       from = 1;
