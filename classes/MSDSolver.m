@@ -1,4 +1,4 @@
-classdef MSDSolver
+classdef MSDSolver < TrackSolver
 
 	properties (Constant)
     opts = statset('FunValCheck', 'off'); 

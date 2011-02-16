@@ -1,4 +1,4 @@
-classdef HMMSolver
+classdef HMMSolver < TrackSolver
 	% represents the logic used to solve a Track using an HMM
 
 	properties
