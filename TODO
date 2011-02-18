@@ -13,60 +13,54 @@ Research Questions
 - Reread vbfret paper and look at vbfret.sourceforge.net and
   http://bio.physics.illinois.edu/.
 
-- Make figures similar to 3.9 and 3.10, but now vary the transition probability
-between states instead of varying the Vmax and Dmax.
+Goal: Improve Model Selection and how we LEARN the best model.
 
-- For all of the rolling MSD figures (figures 3.11, 3.13, 3.14, 3.15, 3.18),
-you should show results for two or three different window sizes.  Use the
-current window size (which gives noisy results) and one or two larger window
-sizes (so that the largest one gives low noise but gradual transitions).
-Also, you could consider a max window size dictated by how often transitions
-happen between D,V states.
+	- Make figures similar to 3.9 and 3.10, but now vary the transition probability
+		between states instead of varying the Vmax and Dmax. 
 
-- Make a version of the MSD fitting approach that allows V and D at the same 
-time (i.e. fit the MSD vs. timelag data, still within a sliding window along the track, 
-with the velocity plus flow model MSD = v^2 * t^2 + 6Dt and report the fit values of 
-V and D).
+	- Explore smarter model selection approaches as well.
 
-- Generate a graph of deltaTs vs deltaVs where deltaT is the time to transition
-  when there is a deltaV change in the x velocity. Last attempt was buggy.
-  Rethink.
-
-- Repeat tests on simulated tracks of the same length and expected transitions as 
-the chromosome tracks (~100 steps total, with one transition from 0 velocity to 3 um/min 
-velocity, then a second transition to 10 um/min velocity, then a third transition back to 0
-velocity).
-
-- Run your algorithm on the chromosome trajectories and plot V and D states vs
-time for each chromosome.  I've attached a .mat file with the tracks from one
-experiment.  The tracks matrix is the usual 6 columns, with all 25 tracks in the
-same matrix.  The X,Y,Z coordinates are in um and the time coordinate (last
-column) is in frame number.  What I usually do to plot the tracks is plot the
-distance between the current track position and the pole (given in
-info.manualpole) versus the time after nuclear envelope breakdown (NEBD), which
-you can calculate using the frame number at which NEBD occurs (info.nebd) and
-the time between frames in seconds (info.timestep).  See the attached figure,
-which came from these tracks.  You could make a similar plot with all the
-chromosomes' V states on the y axis and time after NEBD on the x axis.  For your
-algorithm, try using Vmax = 12 um/min = 0.2 um/s and Dmax = 0.1 um^2/s.
-
-- Consider adding noise to the step observations and improving the models to
-support this.
-When generating trajectory, add a noise element drawn from N(0, \sigma_err).
-
-- Explore smarter model selection approaches as well.
-
-- Can we use recursive binning to get more accurate results? Or perhaps use
+	- Can we use recursive binning to get more accurate results? Or perhaps use
   estimates from MSD approaches as a starting point for Dmax and Vmax?
 
-- Can we try a ramp change application? where the velocity changes gradually?
+Goal: Accurate Presentation and Writeup.
 
-- Also can we effectively distinguish small velocity changes? between varying
-  diffusion coefficient and time-varying velocity? should we care about these?
+	- For all of the rolling MSD figures (figures 3.11, 3.13, 3.14, 3.15, 3.18),
+		you should show results for two or three different window sizes.  Use the
+		current window size (which gives noisy results) and one or two larger window
+		sizes (so that the largest one gives low noise but gradual transitions).
+		Also, you could consider a max window size dictated by how often transitions
+		happen between D,V states. 
 
-Code Improvement
-================
+	- Generate a graph of deltaTs vs deltaVs where deltaT is the time to transition
+  	when there is a deltaV change in the x velocity. Last attempt was buggy.
+  	Rethink.
 
-- Write more tests / sample scripts.
-- Generalize the plot visualizations in TrackExperiments to make it easy to
-  compare two or more predictions for timeseries
+Goal: Show useful application of your method.
+
+	- Repeat tests on simulated tracks of the same length and expected transitions as 
+		the chromosome tracks (~100 steps total, with one transition from 0 velocity to 3 um/min 
+		velocity, then a second transition to 10 um/min velocity, then a third transition back to 0
+		velocity).
+
+	- Run your algorithm on the chromosome trajectories and plot V and D states vs
+		time for each chromosome.  I've attached a .mat file with the tracks from one
+		experiment.  The tracks matrix is the usual 6 columns, with all 25 tracks in the
+		same matrix.  The X,Y,Z coordinates are in um and the time coordinate (last
+		column) is in frame number.  What I usually do to plot the tracks is plot the
+		distance between the current track position and the pole (given in
+		info.manualpole) versus the time after nuclear envelope breakdown (NEBD), which
+		you can calculate using the frame number at which NEBD occurs (info.nebd) and
+		the time between frames in seconds (info.timestep).  See the attached figure,
+		which came from these tracks.  You could make a similar plot with all the
+		chromosomes' V states on the y axis and time after NEBD on the x axis.  For your
+		algorithm, try using Vmax = 12 um/min = 0.2 um/s and Dmax = 0.1 um^2/s.
+
+	- Consider adding noise to the step observations and improving the models to
+		support this. When generating trajectory, add a noise element drawn from 
+		N(0, \sigma_err).
+
+	- Can we try a ramp change application? where the velocity changes gradually?
+
+	- Also can we effectively distinguish small velocity changes? between varying
+  	diffusion coefficient and time-varying velocity? should we care about these?
