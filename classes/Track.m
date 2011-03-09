@@ -94,6 +94,8 @@ classdef Track
 
     % show the 3D plot of the trajectory
     % optional arguments: from=1, to=self.T to splice the range
+		% also color the beginning and the end of the track green and red
+		% respectively to specify direction of time
     function show(self, varargin)
       from = 1;
       to = self.T;
@@ -102,9 +104,17 @@ classdef Track
       if nargin > 1, from = varargin{1}; end
       if nargin > 2, to = varargin{2}; end
 
+			interval = floor((to - from + 1) / 10);
+			iBegin = from + interval; % end of the range at the beginning of the track
+			iEnd = to - interval;	% start of the range at the end of the track
+
       figure;
-      plot3(R(from:to,1), R(from:to,2), R(from:to,3));
-      title(sprintf('3D particle trajectory from T=%d to T=%d', from, to));
+      plot3(R(from:iBegin,1), 	R(from:iBegin,2), 	R(from:iBegin,3), 	'g', ...
+						R(iBegin+1:iEnd,1), R(iBegin+1:iEnd,2), R(iBegin+1:iEnd,3), 'b', ...
+						R(iEnd+1:to,1), 		R(iEnd+1:to,2), 		R(iEnd+1:to,3), 		'r');
+      title(sprintf(['3D particle trajectory from T=%d to T=%d.' ...
+										 'Beginning of track (green), end of the track (red).'], ...
+											from, to));
     end
 
 		function plotDiffusion(self) 
