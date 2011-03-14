@@ -1,5 +1,6 @@
 % ----------------------------------------------
-% backward propagation 
+% backward propagation
+% Generalized to support HMMS with continuous emissions
 
 function [log_b] = backward(x,hmm) 
     

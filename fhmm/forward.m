@@ -1,6 +1,8 @@
 
 % ----------------------------------------------
 % forward propagation 
+% Generalized to support HMMs with continuous emissions where the emission
+% function is defined by (state, observation) rather than a lookup in a matrix
 
 function [log_a] = forward(x,hmm) 
     
