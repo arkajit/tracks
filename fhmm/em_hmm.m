@@ -35,7 +35,7 @@ bic = log_lik - (k-1+k*(k-1)+k*(l-1))/2*log(ndata);
 function [hmm] = Mstep(Nt,NT,NE)
 
 k = size(Nt,1); % number of states
-l = size(NE,2); % number of output symbol
+%l = size(NE,2); % number of output symbol
 
 hmm.t = Nt/sum(Nt);
 hmm.log_t = log(hmm.t);
@@ -43,8 +43,9 @@ hmm.log_t = log(hmm.t);
 hmm.T = NT./repmat(sum(NT,2),1,k);
 hmm.log_T = log(hmm.T);
 
-hmm.E = NE./repmat(sum(NE,2),1,l);
-hmm.log_E = log(hmm.E);
+%hmm.E = NE./repmat(sum(NE,2),1,l);
+%hmm.log_E = log(hmm.E);
+% TODO(arkajit): need to update hmm.means, hmm.stddevs
 
 % ----------------------------------------------
 % E-step of the EM algorithm
