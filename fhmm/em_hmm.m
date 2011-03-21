@@ -11,9 +11,9 @@ if (nargin<3), verbose = 0; end;
 log_lik = 0; cont = 1; it = 1; 
 while (cont), 
     log_lik_tmp = log_lik;
-    [Nt,NT,NE,log_lik] = Estep(X,hmm); 
+    [Nt,NT,means,vars,log_lik] = Estep(X,hmm); 
     if (verbose), fprintf('%4d %5.4f \n',it,log_lik); end;
-    hmm = Mstep(Nt,NT,NE);
+    hmm = Mstep(Nt,NT,means,vars);
     
     cont = (it<5) | (log_lik-log_lik_tmp)>1e-5*abs(log_lik); 
     it = it + 1; 
@@ -32,10 +32,9 @@ bic = log_lik - (k-1+k*(k-1)+k*(l-1))/2*log(ndata);
 % ----------------------------------------------
 % M-step of the EM algorithm
 
-function [hmm] = Mstep(Nt,NT,NE)
+function [hmm] = Mstep(Nt,NT,means,vars)
 
 k = size(Nt,1); % number of states
-%l = size(NE,2); % number of output symbol
 
 hmm.t = Nt/sum(Nt);
 hmm.log_t = log(hmm.t);
@@ -43,27 +42,35 @@ hmm.log_t = log(hmm.t);
 hmm.T = NT./repmat(sum(NT,2),1,k);
 hmm.log_T = log(hmm.T);
 
-%hmm.E = NE./repmat(sum(NE,2),1,l);
-%hmm.log_E = log(hmm.E);
-% TODO(arkajit): need to update hmm.means, hmm.stddevs
+hmm.means = means;
+hmm.stddevs = sqrt(vars);
+
+end
 
 % ----------------------------------------------
 % E-step of the EM algorithm
 
-function [Nt,NT,NE,log_lik] = Estep(X,hmm)
+function [Nt,NT,means,vars,log_lik] = Estep(X,hmm)
 
 % Nt = expected counts for the initial state
 % NT(s,s') = expected number of transitions from s to s'
 % NE(s,z) = expected number of of times we were in s and generated z
 Nt = zeros(size(hmm.log_t)); 
 NT = zeros(size(hmm.log_T)); 
-%NE = zeros(size(hmm.log_E)); % can't take the size of a function 
 
 k = size(hmm.log_t,1); % number of states
+p = length(hmm.means);
+q = length(hmms.stddevs);
+means = zeros(p, 1);
+vars = zeros(q, 1);
 
 log_lik = 0; 
-for i=1:length(X), 	% for each data example
-    x = X{i}; m = length(x); 
+NM = cell(1, length(X)); % useful subformula in mu updates
+numer = zeros(length(X), 1); % numers of mu updates
+denom = zeros(length(X), 1); % denoms for mu updates
+for ix=1:length(X), 	% for each data example
+    x = X{ix}; m = length(x);
+		mix = NM{ix}; mix = zeros(m, 1);
     
     log_a = forward(x,hmm); % forward probabilities on a log-scale
     log_b = backward(x,hmm);% backward probabilities on a log-scale
@@ -72,7 +79,6 @@ for i=1:length(X), 	% for each data example
     % accumulate posterior counts 
     Nt = Nt + norm_exp(log_a(:,1)+log_b(:,1)); 
     for j=1:m-1,	% for each timepoint in an example
-    %    NE(:,x(j)) = NE(:,x(j)) + norm_exp(log_a(:,j)+log_b(:,j)); 
     
         log_A = repmat(log_a(:,j),1,k);
         log_B = repmat(log_b(:,j+1),1,k);
@@ -85,6 +91,26 @@ for i=1:length(X), 	% for each data example
 				log_E = repmat(log_e, 1, k);
         NT = NT + norm_exp(log_A+hmm.log_T+log_E'+log_B'); 
     end;
-    %NE(:,x(m)) = NE(:,x(m)) + norm_exp(log_a(:,m)+log_b(:,m));
 
+		for t=1:m
+			mix(t) = 0;
+			for i=1:p
+				for j=1:q
+					s = hmm.ind2s(i, j);
+					mix(t) = mix(t) + log_a(s, t) + log_b(s, t) ...
+													- 2 * log(hmm.stddevs(j));
+				end 	
+			end
+
+			mix(t) = mix(t) - log_sum_exp(log_a(:,end), 1); 
+			% sub log(Pr(Data))
+		end
+
+		nmix = norm_exp(mix);
+		numer(ix) = x' * nmix;
+		denom(ix) = ones(1,m) * mix;
 end;
+
+for i=1:p
+	means(i) = sum(numer) / sum(denom);
+end

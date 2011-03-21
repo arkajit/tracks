@@ -64,12 +64,17 @@ hmm.T = exp(hmm.log_T);
 hmm.E = @emit;
 hmm.log_E = @(s,x) log(hmm.E(s,x));
 hmm.s2ind = @s2ind;
+hmm.ind2s = @ind2s;
 hmm.to_pairs = @states2pairs;
 
 function [i,j] = s2ind(s)
   i = mod(s, k1);
   if i == 0, i = k1; end;
   j = ceil(s / k1);
+end
+
+function [s] = ind2s(i, j)
+	s = (j-1) + i;
 end
 
 function [pairs, indices] = states2pairs(states)

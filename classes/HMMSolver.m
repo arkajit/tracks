@@ -7,6 +7,7 @@ classdef HMMSolver < TrackSolver
 		nBins
 		odds
 		hmm
+		hmms
 	end	
 
 	methods (Access = private)
@@ -37,6 +38,13 @@ classdef HMMSolver < TrackSolver
 
 			% uniform prior
 			self.hmm = fact_hmm(mus, sigmas, [], [], self.odds, self.odds);
+
+			% learn three different HMMs for each direction
+			% using the same initial guess supplied by the odds
+			self.hmms = cell(3, 1);
+			for i=1:3
+				self.hmms(i) = em_fhmm(track.steps(:,i), self.hmm);
+			end
 		end
 
 		% Using selected HMM, perform inference to find the most likely sequence of
@@ -53,8 +61,10 @@ classdef HMMSolver < TrackSolver
       V = zeros(size(track.V));
 
       for i=1:3
-        states = viterbi(track.steps(:,i), self.hmm);
-        [Si, inds] = self.hmm.to_pairs(states);
+				%hmm = self.hmms{i};
+				hmm = self.hmm;
+        states = viterbi(track.steps(:,i), hmm);
+        [Si, inds] = hmm.to_pairs(states);
 
         V(:,i) = Si(:,1) ./ track.tau;
         D3(:,i) = (Si(:,2) .^ 2) ./ (2 * track.tau);
