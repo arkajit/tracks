@@ -1,7 +1,7 @@
 S = 3;
 means = [-3 0 3];
 stddevs = [0.5 1 2];
-mc = MarkovChain.uniform(S);
+mc = MarkovChain.random(S);
 hmm = CHMM(mc, means, stddevs);
 x = [0.5 0.1 -0.231 -3.3 -2.89 -3.5 -3.21 0.23 -0.31 4.8 1.8 5.2 2.8]';
 %[state, log_v] = hmm.viterbi(x);

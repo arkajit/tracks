@@ -29,6 +29,12 @@ classdef MarkovChain
 				mc = MarkovChain(pi, M);
 			end
 
+			function mc = random(S)
+				pi = rand(S, 1);
+				M = rand(S, S);
+				mc = MarkovChain(pi, M);
+			end
+
 		end
     
 end
