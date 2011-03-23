@@ -33,6 +33,7 @@ t = reshape(t1 * t2', k1*k2, 1);
 hmm.t = t/sum(t);
 hmm.log_t = log(hmm.t);
 k = length(t);
+hmm.k = k;
 
 if k1 == 1
   T1 = [1];
@@ -63,6 +64,7 @@ hmm.T = exp(hmm.log_T);
 
 hmm.E = @emit;
 hmm.log_E = @(s,x) log(hmm.E(s,x));
+hmm.logEall = @x log(emitAll(x));
 hmm.s2ind = @s2ind;
 hmm.ind2s = @ind2s;
 hmm.to_pairs = @states2pairs;
@@ -83,7 +85,7 @@ function [pairs, indices] = states2pairs(states)
   indices = zeros(n,2);
   for k=1:n
     [i,j] = s2ind(states(k));
-    pairs(k,:) = [means(i), stddevs(j)];
+    pairs(k,:) = [hmm.means(i), hmm.stddevs(j)];
     indices(k,:) = [i,j];
   end
 end
@@ -94,6 +96,13 @@ function [prob] = emit(s, x)
   if isnan(prob)
     prob = double(x == hmm.means(i));
   end
+end
+
+function [probs] = emitAll(x)
+	probs = zeros(hmm.k, 1);
+	for s=1:hmm.k
+		probs(i) = emit(s, x);
+	end	
 end
 
 end
