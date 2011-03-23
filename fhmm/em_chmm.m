@@ -1,5 +1,5 @@
-function [hmm] = em_fhmm(x, hmm)
-% em_fhmm - Expectation Maximization for a continuous Gaussian HMM
+function [hmm] = em_chmm(x, hmm)
+% em_chmm - Expectation Maximization for a continuous Gaussian HMM
 %		x - mx1 vector of observations (a single training example)
 %		hmm - initial guess for the parameters
 %			requires t, T, means, stddevs fields to be set to init values
