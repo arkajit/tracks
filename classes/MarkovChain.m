@@ -1,24 +1,34 @@
 classdef MarkovChain
     %MARKOVCHAIN A markov chain
-    %   Detailed explanation goes here
     
     properties
-      K         % number of states
+      S         % number of states
       start     % initial distribution of states
-      trans     % K x K transition matrix
+      trans     % S x S transition matrix
     end
     
     methods
     
-      function self = MarkovChain(t, T)
-        self.K = size(t,1);
-        if (size(T) ~= [self.K, self.K])
-          disp(Error: transition matrix has wrong dimensions)
+      function self = MarkovChain(pi, M)
+        self.S = size(pi,1);
+        if (size(M) ~= [self.S, self.S])
+          disp('Error: transition matrix has wrong dimensions')
           return;
         end
-        self.start = t;
-        self.trans = T;
+        self.start = pi ./ sum(pi);
+        self.trans = M ./ repmat(sum(M, 2), 1, self.S);
       end
+
     end
+
+		methods (Static)
+			
+			function mc = uniform(S)
+				pi = ones(S, 1);
+				M = ones(S, S);
+				mc = MarkovChain(pi, M);
+			end
+
+		end
     
 end
