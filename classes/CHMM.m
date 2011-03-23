@@ -41,10 +41,9 @@ classdef CHMM < HMM
 
 		% emission function
 		function prob = E(self, s, x)
-			if (self.stddevs(s))
-				prob = normpdf(x, self.means(s), self.stddevs(s));
-			else
-				prob = double(x == means(s));
+			prob = normpdf(x, self.means(s), self.stddevs(s));
+			if isnan(prob)
+				prob = double(x == self.means(s));
 			end	
 		end
 
