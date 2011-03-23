@@ -64,7 +64,7 @@ hmm.T = exp(hmm.log_T);
 
 hmm.E = @emit;
 hmm.log_E = @(s,x) log(hmm.E(s,x));
-hmm.logEall = @x log(emitAll(x));
+hmm.logEall = @(x) log(emitAll(x));
 hmm.s2ind = @s2ind;
 hmm.ind2s = @ind2s;
 hmm.to_pairs = @states2pairs;
@@ -101,7 +101,7 @@ end
 function [probs] = emitAll(x)
 	probs = zeros(hmm.k, 1);
 	for s=1:hmm.k
-		probs(i) = emit(s, x);
+		probs(s) = emit(s, x);
 	end	
 end
 

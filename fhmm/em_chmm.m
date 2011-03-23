@@ -6,6 +6,7 @@ function [hmm] = em_chmm(x, hmm)
 %			returns the MLE of hmm parameters including t, T, means, stddevs
 
 [hmm, L] = one_em_iter(x, hmm);
+disp(sprintf('Initial loglik = %f', L));
 
 L0 = L-abs(L);
 while (L-L0 > abs(L)*1e-6)
@@ -14,6 +15,7 @@ while (L-L0 > abs(L)*1e-6)
 end
 
 hmm.loglik = L;
+disp(sprintf('Final loglik = %f', L));
 
 % -----------------------------------------
 function [hmm, loglik] = one_em_iter(x, hmm)
@@ -54,4 +56,3 @@ function [hmm, loglik] = one_em_iter(x, hmm)
 
 	hmm.means = W * x;
 	hmm.stddevs = sqrt(W * ((x - hmm.means).^2));
-end
