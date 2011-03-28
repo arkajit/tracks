@@ -89,6 +89,7 @@ classdef CHMM < HMM
 
 			means = zeros(S, 1);		% estimates of means
 			stddevs = zeros(S, 1);	% estimates of standard deviations
+			loglik = 0;							% the log likelihood of the new model
 
 			%% E-Step
 			for i=1:N
@@ -129,7 +130,7 @@ classdef CHMM < HMM
 				W = NW{i};
 
 				for s=1:S
-					PV(s) = PV(s) + W * (x - means(s)).^2;
+					PV(s) = PV(s) + W(s,:) * (x-means(s)).^2;
 				end
 			end
 			stddevs = sqrt(PV ./ PS);
