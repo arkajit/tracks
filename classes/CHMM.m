@@ -27,6 +27,17 @@ classdef CHMM < HMM
 		end
 	end
 
+	methods (Static)
+	
+		function hmm = random(S, mumax, stdmax)
+			mc = MarkovChain.random(S);
+			means = rand(S, 1) .* sign(randn(S, 1)) * mumax;
+			stddevs = rand(S, 1) * stdmax;
+			hmm = CHMM(mc, means, stddevs);
+		end
+
+	end
+
 	methods
 
 		function self = CHMM(mc, means, stddevs)
@@ -47,12 +58,18 @@ classdef CHMM < HMM
 			end	
 		end
 
+		% sampling the emission function
+		function x = emit(self, s)
+			x = self.means(s) + randn * self.stddevs(s);
+		end
+
 		% Perform Expectation Maximization on a set of training examples.
 		%	Returns the HMM that maximizes the likelihood of the observed data.
 		% 
 		%	@param 		X 		cellarray 	Nx1
-		% @returns 	hmm 	CHMM
-		function hmm = em(self, X)
+		% @return 	hmm 	CHMM
+		% @return 	L			double			log-likelihood
+		function [hmm, L] = em(self, X)
 			[hmm, L] = self.one_em_iter(X);
 			disp(sprintf('Initial loglik = %f', L));
 

@@ -13,6 +13,7 @@ classdef HMM
 	
 	methods (Abstract)
 		[prob] = E(self, s, x);		% emission function
+		[x] = emit(self, s);			% sample the emission distribution
 	end
 
 	methods 
@@ -42,6 +43,39 @@ classdef HMM
 
 	methods
 
+		% sample N sequences of observations of length T from this HMM
+		function [X, S] = sample(self, N, T)
+			X = cell(N, 1);
+			S = cell(N, 1);
+			for i=1:N
+				x = zeros(T, 1);
+				s = zeros(T, 1);
+				s(1) = mnsmpl(self.pi);
+				x(1) = self.emit(s(1));
+				
+				for t=2:T
+					s(t) = mnsmpl(self.M(s(t-1),:));
+					x(t) = self.emit(s(t));
+				end
+				
+				X{i} = x;
+				S{i} = s;
+			end
+
+			function [r] = mnsmpl(p) 
+				p = reshape(p, 1, length(p));
+				r = find(mnrnd(1, p)==1);
+			end
+		end
+
+		function [S] = infer(self, X)
+			N = length(X);
+			S = cell(N, 1);
+			for i=1:N
+				S{i} = self.viterbi(X{i});
+			end
+		end
+
 		function [state, log_v] = viterbi(self, x) 
 			S = self.S;						 % number of states
 			T = length(x);         % length of sequence
@@ -61,7 +95,7 @@ classdef HMM
 			end
 
 			% backtrack
-			state = zeros(1,T);
+			state = zeros(T, 1);
 			[tmp,ind] = max(log_v(:,T));
 			state(T) = ind(1); 
 			for t=T-1:-1:1,
