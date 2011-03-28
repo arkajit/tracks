@@ -8,8 +8,9 @@ classdef RandomTracks
     % steps generated in the trajectory. If the number of steps in the
     % trajectory is denoted S:
     % 
-    % @param D mat Sx1
-    % @param V mat Sx3
+    % @param D	 	mat 		Sx1
+    % @param V 		mat 		Sx3
+		% @param tau	double 	the time between steps
     %
     % @return pos mat (S+1)x3 
     function [pos] = generateTrajectory(D, V, tau)
