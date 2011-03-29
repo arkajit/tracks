@@ -38,12 +38,11 @@ tic;
 Zest = hmm_est.infer(X);
 toc
 
-% NOTE(arkajit): error computation might be comparing apples to oranges
-% state '1' in original hmm may not be state '1' in hmm_est
 disp('Computing errors...');
+[~, idx] = sort(hmm_est.means);
 errs = zeros(Ntest, 1);
 for i=1:Ntest
-	zest = Zest{i};
+	zest = idx(Zest{i}); 	% interpret states in sorted order
 	ztru = Z{i};
 	errs(i) = sum(zest ~= ztru);
 end
