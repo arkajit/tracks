@@ -4,8 +4,7 @@ classdef HMMSolver < TrackSolver
 	properties
 		Dmax
 		Vmax
-		P			% expected number of velocity states
-		Q			% expected number of diffusion states
+		S 		% expected number of states
 		hmm
 	end	
 
@@ -17,21 +16,17 @@ classdef HMMSolver < TrackSolver
 		% 
 		% @param track Track
 		% 
-		% @return D vec
+		% @return D mat
 		% @return V mat 
-		function [D3, V] = infer(self, track)
-      D = zeros(size(track.D));
-      D3 = zeros(size(track.V)); % want 3D
+		function [D, V] = infer(self, track)
+      D = zeros(size(track.V)); % full 3D (should be similar in each dimension)
       V = zeros(size(track.V));
 
       for i=1:3
 				states = self.hmm.viterbi(track.steps(:,i));
-
-				V(:,i) = hmm.means(states) ./ track.tau;
-				D3(:,i) = (hmm.stddevs(states) .^ 2) ./ (2 * track.tau);
+				V(:,i) = self.hmm.means(states) ./ track.tau;
+				D(:,i) = (self.hmm.stddevs(states) .^ 2) ./ (2 * track.tau);
       end
-		
-      %D = mean(D3, 2); 	% average x,y,z predictions
 		end	
 
 		function [err] = computeError(self, errD, errV) 
@@ -43,28 +38,18 @@ classdef HMMSolver < TrackSolver
       err = norm([errV_scaled; errD_scaled]) / 2;  
 		end
 
-		% Initialize a fHMM from provided odds parameters
-		% Will be used as starting point for EM
-		function [hmm] = initFHMM(self, tau)
+		% Initialize a HMM with random parameters
+		% Will be used to start EM
+		%
+		%	@param 	tau		double	timestep in seconds
+		% @return hmm		CHMM		a random, initial model
+		function [hmm] = init(self, tau)
       maxstd = sqrt(2*self.Dmax*tau);
       maxmean = self.Vmax*tau;
-			odds = 10;					% how to initialize the transition matrix
-
-			sigs = rand(self.Q, 1) * maxstd;	
-			mus = rand(self.P, 1) .* sign(randn(self.P, 1)) * maxmean;
-
-			S = self.P*self.Q;	% number of states
-			pi = ones(S, 1);
-			if S == 1
-				M = [1];
-			else
-				M = ones(S) + ((S-1)*odds - 1)*eye(S); % diag. entries = odds*(S-1)
-			end
-			
-			mc = MarkovChain(pi, M);
-			means = reshape(repmat(mus, Q, 1), S, 1);
-			stddevs = reshape(repmat(sigs', P, 1), S, 1);
-			hmm = CHMM(mc, means, stddevs);
+			sigs = rand(self.S, 1) * maxstd;	
+			mus = rand(self.S, 1) .* sign(randn(self.S, 1)) * maxmean;
+			mc = MarkovChain.random(self.S);
+			hmm = CHMM(mc, mus, sigs);
 		end
 
 	end
@@ -72,20 +57,19 @@ classdef HMMSolver < TrackSolver
 	methods
 		
 		% constructor
-		function [self] = HMMSolver(Dmax, Vmax, Q, P) 
+		function [self] = HMMSolver(Dmax, Vmax, S) 
 			self.Dmax = Dmax;
 			self.Vmax = Vmax;
-			self.Q = Q;
-			self.P = P;
+			self.S = S;
 		end
 
 		% Select the ML HMM that explains the observed tracks.
 		% Require all tracks to have the same timestep.
 		% 
 		% @param tracks 	cellarray 	Nx1
-		function train(self, tracks)
+		function [self] = train(self, tracks)
 			N = length(tracks);
-			if (!N)
+			if (~N)
 				return;
 			end
 
@@ -94,15 +78,15 @@ classdef HMMSolver < TrackSolver
 			for i=1:N
 				track = tracks{i};
 
-				if (!tau) 
+				if (~tau) 
 					tau = track.tau;
-				else if (tau != track.tau)
+				elseif (tau ~= track.tau)
 					disp('Error: tracks must have the same timestep');
 					return;
 				end
 
 				for j=1:3
-					X{i*j} = track.steps(:,j);
+					X{3*(i-1)+j} = track.steps(:,j);
 				end
 			end
 
@@ -117,6 +101,16 @@ classdef HMMSolver < TrackSolver
 			[D, V] = self.infer(track);
 			[errD, errV] = track.compare(D, V);
 			err = self.computeError(errD, errV);	
+		end
+
+		function [D, V] = solveAll(self, tracks)
+			N = length(tracks);		% no. of test examples
+			D = cell(N, 1);
+			V = cell(N, 1);
+
+			for i=1:N
+				[D{i}, V{i}] = self.infer(tracks{i});
+			end
 		end
 
 	end

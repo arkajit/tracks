@@ -1,3 +1,6 @@
+% TODO(arkajit): update this to run the new algorithm
+% specifically, should use a train/test approach as in the test_tracks script
+
 data = importdata('../data/chromosome_tracks.mat');
 
 Dmax = 0.1;
