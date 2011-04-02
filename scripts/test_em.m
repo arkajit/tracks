@@ -1,12 +1,12 @@
 S = 3;
-means = [-3 0 3];
-stddevs = [0.5 1 2];
+means = [-3 0 3]';
+stddevs = [0.5 1 2]';
 mc = MarkovChain.random(S);
 hmm = CHMM(mc, means, stddevs);
 
 %% Training
 Ntrain = 15;
-Nrestarts = 5;
+Nrestarts = 2;
 T = 100; 	% length of sequences
 
 [X] = hmm.sample(Ntrain, T);
@@ -40,9 +40,14 @@ toc
 
 disp('Computing errors...');
 [~, idx] = sort(hmm_est.means);
+% invert idx function
+iidx = zeros(size(idx));
+for i=1:length(idx)
+	iidx(idx(i)) = i;
+end
 errs = zeros(Ntest, 1);
 for i=1:Ntest
-	zest = idx(Zest{i}); 	% interpret states in sorted order
+	zest = iidx(Zest{i}); 	% interpret states in sorted order
 	ztru = Z{i};
 	errs(i) = sum(zest ~= ztru);
 end
