@@ -66,17 +66,26 @@ classdef CHMM < HMM
 		% Perform Expectation Maximization on a set of training examples.
 		%	Returns the HMM that maximizes the likelihood of the observed data.
 		% 
-		%	@param 		X 		cellarray 	Nx1
-		% @return 	hmm 	CHMM
-		% @return 	L			double			log-likelihood
-		function [hmm, L] = em(self, X)
+		%	@param 		X 			cellarray 	Nx1
+		% @param 		maxIter	int					max number of EM iterations (default: 10)
+		% @return 	hmm 		CHMM
+		% @return 	L				double			log-likelihood
+		function [hmm, L] = em(self, X, maxIter)
+			if (nargin < 3)
+				maxIter = 10;
+			end
+
+			disp('Starting EM...');
 			[hmm, L] = self.one_em_iter(X);
 			disp(sprintf('Initial loglik = %f', L));
 
 			L0 = L-abs(L);
-			while (L-L0 > abs(L)*1e-6)
+			iter = 1;
+			while (iter < maxIter && L-L0 > abs(L)*1e-6)
 				L0 = L;
 				[hmm, L] = hmm.one_em_iter(X);
+				disp(sprintf('Iter %d loglik = %f', iter, L));
+				iter = iter + 1;
 			end
 
 			disp(sprintf('Final loglik = %f', L));
@@ -112,6 +121,10 @@ classdef CHMM < HMM
 			for i=1:N
 				x = X{i};
 				T = length(x); 				% number of timesteps in hidden chain
+				if (~T)
+					disp(sprintf('Training example %d is empty.', i));
+					continue;
+				end
 				W = zeros(S, T);			% weights to update mean and variances
 
 				log_a = self.forward(x);
@@ -144,8 +157,12 @@ classdef CHMM < HMM
 			means = PM ./ PS;
 			for i=1:N
 				x = X{i};
-				W = NW{i};
+				T = length(x);
+				if (~T)
+					continue;
+				end
 
+				W = NW{i};
 				for s=1:S
 					PV(s) = PV(s) + W(s,:) * (x-means(s)).^2;
 				end
