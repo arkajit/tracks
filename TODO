@@ -1,51 +1,32 @@
-Research Questions
-==================
+Algorithm Improvements:
 
-- Consolidate towards a paper draft (with unbiased presentation of the other
-  methods) with a more final set of figures. 
-	Show what you have and list the next steps and the benefits of them.
-	Target paper draft ready to submit by Spring Break. Perhaps to BMC
-	Bioinformatics?
-
-- Make a working version where people can submit tracks and we can output
-  results. Make lcbb.mit.edu/tracks. Need to get access to server.
-
-- Reread vbfret paper and look at vbfret.sourceforge.net and
-  http://bio.physics.illinois.edu/.
-
-Goal: Improve Model Selection and how we LEARN the best model.
-
-	- Make figures similar to 3.9 and 3.10, but now vary the transition probability
-		between states instead of varying the Vmax and Dmax. 
-
-	- Explore smarter model selection approaches as well.
-
-	- Can we use recursive binning to get more accurate results? Or perhaps use
-  estimates from MSD approaches as a starting point for Dmax and Vmax?
-	
-	- What about using multivariate Gaussian emissions to have a single HMM for 3D
+	- Use estimates from MSD approaches as a starting point for Dmax and Vmax?
+	- CONSTRAINED Learning: what if we fix transition matrix or parameterize it
+	  with a single odds parameter?
+	- What about using MULTIVARIATE Gaussian emissions to have a single HMM for 3D
 	  step emissions instead of 3 HMMs for 1D emissions
 
-Goal: Accurate Presentation and Writeup.
+Writing / Figure Tips:
 
+	- Present opposing methods in a balanced, unbiased way. 
+	- Make figures similar to 3.9 and 3.10, but now vary the transition probability
+		between states instead of varying the Vmax and Dmax. 
 	- For all of the rolling MSD figures (figures 3.11, 3.13, 3.14, 3.15, 3.18),
 		you should show results for two or three different window sizes.  Use the
 		current window size (which gives noisy results) and one or two larger window
 		sizes (so that the largest one gives low noise but gradual transitions).
 		Also, you could consider a max window size dictated by how often transitions
 		happen between D,V states. 
-
 	- Generate a graph of deltaTs vs deltaVs where deltaT is the time to transition
   	when there is a deltaV change in the x velocity. Last attempt was buggy.
   	Rethink.
 
-Goal: Show useful application of your method.
+Tests/Analyses to Run:
 
 	- Repeat tests on simulated tracks of the same length and expected transitions as 
 		the chromosome tracks (~100 steps total, with one transition from 0 velocity to 3 um/min 
 		velocity, then a second transition to 10 um/min velocity, then a third transition back to 0
 		velocity).
-
 	- Run your algorithm on the chromosome trajectories and plot V and D states vs
 		time for each chromosome.  I've attached a .mat file with the tracks from one
 		experiment.  The tracks matrix is the usual 6 columns, with all 25 tracks in the
@@ -58,12 +39,15 @@ Goal: Show useful application of your method.
 		which came from these tracks.  You could make a similar plot with all the
 		chromosomes' V states on the y axis and time after NEBD on the x axis.  For your
 		algorithm, try using Vmax = 12 um/min = 0.2 um/s and Dmax = 0.1 um^2/s.
+	- Can we try a ramp change application? where the velocity changes gradually?
+	- Also can we effectively distinguish small velocity changes? between varying
+  	diffusion coefficient and time-varying velocity? should we care about these?
 
-	- Consider adding noise to the step observations and improving the models to
+Future:
+
+- Make a working version where people can submit tracks and we can output
+  results. Make lcbb.mit.edu/tracks. Need to get access to server.
+- Consider adding noise to the step observations and improving the models to
 		support this. When generating trajectory, add a noise element drawn from 
 		N(0, \sigma_err).
 
-	- Can we try a ramp change application? where the velocity changes gradually?
-
-	- Also can we effectively distinguish small velocity changes? between varying
-  	diffusion coefficient and time-varying velocity? should we care about these?
