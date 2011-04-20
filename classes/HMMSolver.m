@@ -44,12 +44,33 @@ classdef HMMSolver < TrackSolver
 		%	@param 	tau		double	timestep in seconds
 		% @return hmm		CHMM		a random, initial model
 		function [hmm] = init(self, tau)
-      maxstd = sqrt(2*self.Dmax*tau);
-      maxmean = self.Vmax*tau;
-			sigs = rand(self.S, 1) * maxstd;	
-			mus = rand(self.S, 1) .* sign(randn(self.S, 1)) * maxmean;
-			mc = MarkovChain.random(self.S);
-			hmm = CHMM(mc, mus, sigs);
+            maxstd = sqrt(2*self.Dmax*tau);
+            maxmean = self.Vmax*tau;
+			hmm = CHMM.random(self.S, maxmean, maxstd);
+		end
+
+	end
+
+	methods (Static)
+
+		function [errs] = errors(n, A, B)
+			errs = -1;
+			for f=perms(1:n)
+				nErrs = 0;
+				
+				% compute the errors with this permutation
+				for i=1:length(A)
+					nErrs = nErrs + sum(A{i} ~= f(B{i}));
+					if (errs >= 0 && nErrs > errs)
+						break;
+					end
+				end
+
+				% update best error count so far
+				if (errs < 0 || nErrs < errs)
+					errs = nErrs;
+				end
+			end
 		end
 
 	end
@@ -67,7 +88,8 @@ classdef HMMSolver < TrackSolver
 		% Require all tracks to have the same timestep.
 		% 
 		% @param tracks 	cellarray 	Nx1
-		function [self] = train(self, tracks)
+		% @param maxIter	int					number of EM iterations
+		function [self] = train(self, tracks, maxIter)
 			N = length(tracks);
 			if (~N)
 				return;
@@ -91,7 +113,7 @@ classdef HMMSolver < TrackSolver
 			end
 
 			self.hmm = self.init(tau);
-			self.hmm = self.hmm.em(X);
+			self.hmm = self.hmm.em(X, maxIter);
 		end
 
 		% Solve a track for its underlying motion parameters using a factorial HMM.
