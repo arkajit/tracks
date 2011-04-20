@@ -5,6 +5,7 @@ classdef CHMM < HMM
 		chain			% MarkovChain
 		means 		% means of states
 		stddevs 	% standard deviations of states	
+		options		% learning options
 	end
 
 	properties (Dependent)
@@ -40,13 +41,20 @@ classdef CHMM < HMM
 
 	methods
 
-		function self = CHMM(mc, means, stddevs)
+		function self = CHMM(mc, means, stddevs, options)
 			self.chain = mc;
 			self.means = means;
 			self.stddevs = stddevs;	
 			if (length(self.means) ~= self.chain.S || ...
 					(length(self.stddevs) ~= self.chain.S))
 				disp('Error: incorrect number of means or stddevs');
+			end
+
+			if (nargin < 4)
+				self.options.learnStart = true;
+				self.options.learnTrans = true;
+			else
+				self.options = options;
 			end
 		end
 
@@ -63,6 +71,20 @@ classdef CHMM < HMM
 			x = self.means(s) + randn * self.stddevs(s);
 		end
 
+		% Overlay and plot all the normal emission distributions for given range.
+		%
+		% @param 	x 	vec
+		function plotNormals(self, x)
+			if (nargin == 1)
+				x = -10:0.01:10;
+			end
+			y = zeros(length(x), self.S);
+			for i=1:self.S
+				y(:, i) = normpdf(x, self.means(i), self.stddevs(i));
+			end
+			plot(x, y);
+		end
+
 		% Perform Expectation Maximization on a set of training examples.
 		%	Returns the HMM that maximizes the likelihood of the observed data.
 		% 
@@ -72,7 +94,7 @@ classdef CHMM < HMM
 		% @return 	L				double			log-likelihood
 		function [hmm, L] = em(self, X, maxIter)
 			if (nargin < 3)
-				maxIter = 10;
+				maxIter = 20;
 			end
 
 			disp('Starting EM...');
@@ -140,15 +162,19 @@ classdef CHMM < HMM
 				PS = PS + sum(W, 2);
 				PM = PM + W * x;
 
-				% update initial state counts	
-				Npi = Npi + norm_exp(log_a(:,1)+log_b(:,1));
+				if (self.options.learnStart) 
+					% update initial state counts	
+					Npi = Npi + norm_exp(log_a(:,1)+log_b(:,1));
+				end
 
-				% update transition counts
-				for t=1:T-1	
-					log_A = repmat(log_a(:,t),1,S);
-					log_B = repmat(log_b(:,t+1),1,S);
-					log_E = repmat(self.log_Es(x(t+1)),1,S);
-					NM = NM + norm_exp(log_A+self.log_M+log_E'+log_B'); 
+				if (self.options.learnTrans)
+					% update transition counts
+					for t=1:T-1	
+						log_A = repmat(log_a(:,t),1,S);
+						log_B = repmat(log_b(:,t+1),1,S);
+						log_E = repmat(self.log_Es(x(t+1)),1,S);
+						NM = NM + norm_exp(log_A+self.log_M+log_E'+log_B'); 
+					end
 				end
 
 			end	% END loop over training examples
@@ -170,9 +196,19 @@ classdef CHMM < HMM
 			stddevs = sqrt(PV ./ PS);
 
 			%% M-Step (for pi and M)
-			pi = Npi / sum(Npi);
-			M = NM ./ repmat(sum(NM, 2), 1, S);
-			hmm = CHMM(MarkovChain(pi, M), means, stddevs);
+			if (self.options.learnStart)
+				pi = Npi / sum(Npi);
+			else
+				pi = self.chain.start;
+			end
+
+			if (self.options.learnTrans)
+				M = NM ./ repmat(sum(NM, 2), 1, S);
+			else
+				M = self.chain.trans;
+			end
+
+			hmm = CHMM(MarkovChain(pi, M), means, stddevs, self.options);
 		end
 
 	end
