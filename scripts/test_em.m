@@ -6,29 +6,27 @@ hmm = CHMM(mc, means, stddevs);
 
 %% Training
 Ntrain = 15;
-Nrestarts = 2;
-T = 100; 	% length of sequences
+Nrestarts = 1;
+T = 200; 	% length of sequences
 
 [X] = hmm.sample(Ntrain, T);
 
 disp('Training with EM...');
-hmm0 = CHMM.random(S, 5, 3);
 tic;
+hmm0 = CHMM.random(S, 5, 3);
 [hmm_est, L] = hmm0.em(X);
-toc
 
 % do several restarts of HMM
 for i=1:Nrestarts
 	disp(sprintf('EM restart %d', i));
-	tic;
 	hmm0 = CHMM.random(S, 5, 3);
 	[hmm1, L1] = hmm0.em(X);
 	if (L1 > L)
 		hmm_est = hmm1;
 		L = L1;
 	end	
-	toc
 end
+toc
 
 %% Testing
 Ntest = 10;

@@ -3,9 +3,11 @@ T = 100; 		% 	number of steps
 S = 4;			% 	expected number of states (vel or diff)
 
 % values specific for the chromosome application
-Dmax = 0.2;		% microns^2/s
-Vmax = 0.1;		% microns/s
-tau = 15;			% s
+Dmax = 1;		% microns^2/s
+Vmax = 5;		% microns/s
+tau = 1;			% s
+
+maxIter = 10;	% number of EM iterations
 
 disp('Generating data...');
 tic;
@@ -22,7 +24,7 @@ toc
 disp('Training model...');
 tic;
 solver = HMMSolver(Dmax, Vmax, S);
-solver = solver.train(trainTracks);
+solver = solver.train(trainTracks, maxIter);
 toc
 
 disp('Testing model...');
