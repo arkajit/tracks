@@ -22,6 +22,9 @@ Goal: Improve Model Selection and how we LEARN the best model.
 
 	- Can we use recursive binning to get more accurate results? Or perhaps use
   estimates from MSD approaches as a starting point for Dmax and Vmax?
+	
+	- What about using multivariate Gaussian emissions to have a single HMM for 3D
+	  step emissions instead of 3 HMMs for 1D emissions
 
 Goal: Accurate Presentation and Writeup.
 
