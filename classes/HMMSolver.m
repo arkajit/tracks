@@ -29,15 +29,6 @@ classdef HMMSolver < TrackSolver
       end
 		end	
 
-		function [err] = computeError(self, errD, errV) 
-      errD_scaled = errD / self.Dmax;
-      errV_scaled = errV ./ (2*self.Vmax);
-			
-			% max error norm is 2
-      % since each of the four components has max error 1
-      err = norm([errV_scaled; errD_scaled]) / 2;  
-		end
-
 		% Initialize a HMM with random parameters
 		% Will be used to start EM
 		%
@@ -116,16 +107,7 @@ classdef HMMSolver < TrackSolver
 			self.hmm = self.hmm.em(X, maxIter);
 		end
 
-		% Solve a track for its underlying motion parameters using a factorial HMM.
-		% 
-		% @param track Track
-		function [D, V, err] = solve(self, track)
-			[D, V] = self.infer(track);
-			[errD, errV] = track.compare(D, V);
-			err = self.computeError(errD, errV);	
-		end
-
-		function [D, V] = solveAll(self, tracks)
+		function [D, V] = test(self, tracks)
 			N = length(tracks);		% no. of test examples
 			D = cell(N, 1);
 			V = cell(N, 1);
