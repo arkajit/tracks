@@ -44,8 +44,8 @@ classdef HMMSolver < TrackSolver
 		%	@param 	tau		double	timestep in seconds
 		% @return hmm		CHMM		a random, initial model
 		function [hmm] = init(self, tau)
-            maxstd = sqrt(2*self.Dmax*tau);
-            maxmean = self.Vmax*tau;
+      maxstd = sqrt(2*self.Dmax*tau);
+      maxmean = self.Vmax*tau;
 			hmm = CHMM.random(self.S, maxmean, maxstd);
 		end
 
