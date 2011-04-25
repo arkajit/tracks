@@ -68,6 +68,12 @@ classdef HMM
 			end
 		end
 
+		function [x, s] = sampleOne(self, T)
+			[X, S] = self.sample(1, T);
+			x = X{1};
+			s = S{1};
+		end
+
 		function [S] = infer(self, X)
 			N = length(X);
 			S = cell(N, 1);
