@@ -76,6 +76,26 @@ classdef Track
       self.V = NaN(self.T-1,3);
     end
 
+		% NOTE(arkajit): careful in calling this, steps should be drawn from a D, V
+		% distribution, not just a mean, sigma distribution
+		function [self] = fromSteps(steps, tau)
+			self = Track();
+			self.steps = steps;
+			S = length(steps);
+			self.T = S+1;
+			pos = zeros(self.T, 3);
+
+			for t=1:S
+				pos(t+1,:) = pos(t,:) + steps(t,:);
+			end
+
+			self.positions = pos;
+			[~, ~, self.angles] = Track.observe(pos);
+			self.tau = tau;
+      self.D = NaN(self.T-1,1);
+      self.V = NaN(self.T-1,3);
+		end
+
   end
     
   methods
