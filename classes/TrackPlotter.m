@@ -69,7 +69,7 @@ classdef TrackPlotter
 				else
 					h = figure;
 				end;
-				plot(X, [self.track.V(:,i), V(:,i)]);
+				plot(X, self.track.V(:,i), '-', X, V(:,i), '+-.');
 				legend(sprintf('v_{%s} (Actual)', labels(i)), ...
 							 sprintf('v^*_{%s} (Estimated)', labels(i)));
 				ylabel(sprintf('Instantaneous v_{%s} ([dist]/s)', labels(i)));
