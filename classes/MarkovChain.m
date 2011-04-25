@@ -35,6 +35,15 @@ classdef MarkovChain
 				mc = MarkovChain(pi, M);
 			end
 
+			function mc = fromOdds(S, odds)
+				pi = rand(S, 1);
+				M = ones(S, S);
+				for i=1:S
+					M(i,i) = (S-1)*odds; 
+				end
+				mc = MarkovChain(pi, M);
+			end
+
 		end
     
 end

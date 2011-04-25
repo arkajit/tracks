@@ -31,10 +31,39 @@ classdef CHMM < HMM
 	methods (Static)
 	
 		function hmm = random(S, mumax, stdmax)
+			if (nargin == 1)
+				mumax = 10;
+				stdmax = 2;
+			end
 			mc = MarkovChain.random(S);
 			means = rand(S, 1) .* sign(randn(S, 1)) * mumax;
 			stddevs = rand(S, 1) * stdmax;
 			hmm = CHMM(mc, means, stddevs);
+		end
+
+		function hmm = fromOdds(S, odds)
+			hmm = CHMM.random(S);
+			hmm.chain = MarkovChain.fromOdds(S, odds);
+		end
+
+		function [hmm, L] = fit(S, X, nRestarts, maxIter)
+			if (nargin < 3)
+				nRestarts = 2;
+			end
+
+			if (nargin < 4)
+				maxIter = 10;	
+			end
+
+			for i=1:nRestarts
+				disp(sprintf('EM restart %d: ', i));
+				hmm0 = CHMM.random(S);
+				[hmm1, L1] = hmm0.em(X, maxIter);	
+				if (i == 1 || isnan(L) || L1 > L)
+					hmm = hmm1;
+					L = L1;
+				end
+			end
 		end
 
 	end
@@ -76,7 +105,7 @@ classdef CHMM < HMM
 		% @param 	x 	vec
 		function plotNormals(self, x)
 			if (nargin == 1)
-				x = -10:0.01:10;
+				x = -15:0.01:15;
 			end
 			y = zeros(length(x), self.S);
 			for i=1:self.S
@@ -94,7 +123,7 @@ classdef CHMM < HMM
 		% @return 	L				double			log-likelihood
 		function [hmm, L] = em(self, X, maxIter)
 			if (nargin < 3)
-				maxIter = 20;
+				maxIter = 10;
 			end
 
 			disp('Starting EM...');
