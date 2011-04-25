@@ -58,6 +58,36 @@ classdef RandomTracks
 			track = RandomTracks.fromParams(nSteps, Dmax, Vmax, tau);
 		end
 
+		function [tracks] = sample(hmms, tau, N)
+			if (nargin < 3)
+				N = 100;
+			end
+
+			tracks = cell(N, 1);
+			for i=1:N
+				tracks{i} = RandomTracks.fromModels(hmms, tau);
+			end
+		end
+
+		function [track] = fromModels(hmms, tau, T)
+			if (nargin < 3)
+				T = 100;
+			end
+
+			[~, Sx] = hmms{1}.sampleOne(T);
+			[~, Sy] = hmms{2}.sampleOne(T);
+			[~, Sz] = hmms{3}.sampleOne(T);
+
+			D = zeros(T, 1);
+			D = (hmms{1}.stddevs(Sx) .^ 2) ./ (2 * tau);
+			
+			V = zeros(T, 3);
+			V(:,1) = hmms{1}.means(Sx) ./ tau;
+			V(:,2) = hmms{2}.means(Sy) ./ tau;
+			V(:,3) = hmms{3}.means(Sz) ./ tau;
+			track = RandomTracks.from(D, V, tau);
+		end
+
     function [track] = diffusion(nSteps, diffusionCoeff, tau)
       D = diffusionCoeff*ones(nSteps,1);
       V = zeros(S, 3);
