@@ -1,11 +1,12 @@
-classdef HMMSolver < TrackSolver
+classdef HMMSolver
 	% represents the logic used to solve a Track using an HMM
 
 	properties
-		Dmax
-		Vmax
+		%Dmax
+		%Vmax
 		S 		% expected number of states
 		hmm
+		hmms
 	end	
 
 	methods (Access = private)
@@ -23,9 +24,15 @@ classdef HMMSolver < TrackSolver
       V = zeros(size(track.V));
 
       for i=1:3
-				states = self.hmm.viterbi(track.steps(:,i));
-				V(:,i) = self.hmm.means(states) ./ track.tau;
-				D(:,i) = (self.hmm.stddevs(states) .^ 2) ./ (2 * track.tau);
+				if (~ isempty(self.hmms))
+					hmm = self.hmms{i};
+				else 
+					hmm = self.hmm;
+				end
+
+				states = hmm.viterbi(track.steps(:,i));
+				V(:,i) = hmm.means(states) ./ track.tau;
+				D(:,i) = (hmm.stddevs(states) .^ 2) ./ (2 * track.tau);
       end
 		end	
 
@@ -35,22 +42,24 @@ classdef HMMSolver < TrackSolver
 		%	@param 	tau		double	timestep in seconds
 		% @return hmm		CHMM		a random, initial model
 		function [hmm] = init(self, tau)
-      maxstd = sqrt(2*self.Dmax*tau);
-      maxmean = self.Vmax*tau;
-			hmm = CHMM.random(self.S, maxmean, maxstd);
+      %maxstd = sqrt(2*self.Dmax*tau);
+      %maxmean = self.Vmax*tau;
+			hmm = CHMM.random(self.S);
 		end
 
 	end
 
 	methods (Static)
 
-		function [errs] = errors(n, A, B)
+		function [frac, errs, order] = errors(n, A, B)
 			errs = -1;
-			for f=perms(1:n)
+			alen = length(A);
+			order = [];
+			for f=perms(1:n)'
 				nErrs = 0;
 				
 				% compute the errors with this permutation
-				for i=1:length(A)
+				for i=1:alen
 					nErrs = nErrs + sum(A{i} ~= f(B{i}));
 					if (errs >= 0 && nErrs > errs)
 						break;
@@ -60,8 +69,11 @@ classdef HMMSolver < TrackSolver
 				% update best error count so far
 				if (errs < 0 || nErrs < errs)
 					errs = nErrs;
+					order = f;
 				end
 			end
+
+			frac = errs / (alen * length(A{1}));
 		end
 
 	end
@@ -69,9 +81,9 @@ classdef HMMSolver < TrackSolver
 	methods
 		
 		% constructor
-		function [self] = HMMSolver(Dmax, Vmax, S) 
-			self.Dmax = Dmax;
-			self.Vmax = Vmax;
+		function [self] = HMMSolver(S) 
+			%self.Dmax = Dmax;
+			%self.Vmax = Vmax;
 			self.S = S;
 		end
 
@@ -105,6 +117,37 @@ classdef HMMSolver < TrackSolver
 
 			self.hmm = self.init(tau);
 			self.hmm = self.hmm.em(X, maxIter);
+		end
+
+		function [self] = trainXYZ(self, tracks)
+			N = length(tracks);
+			if (~N)
+				return;
+			end
+
+			X = cell(N, 1);
+			Y = cell(N, 1);
+			Z = cell(N, 1);
+
+			for i=1:N
+				track = tracks{i};
+	
+				if (i == 1)
+					tau = track.tau;
+				elseif (tau ~= track.tau)
+					disp('Error: tracks must have the same timestep');
+					return;
+				end
+
+				X{i} = track.steps(:,1);
+				Y{i} = track.steps(:,2);
+				Z{i} = track.steps(:,3);
+			end
+
+			self.hmms = cell(3,1);
+			self.hmms{1} = CHMM.fit(self.S, X);
+			self.hmms{2} = CHMM.fit(self.S, Y);
+			self.hmms{3} = CHMM.fit(self.S, Z);
 		end
 
 		function [D, V] = test(self, tracks)
