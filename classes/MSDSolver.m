@@ -6,7 +6,7 @@ classdef MSDSolver < TrackSolver
 
 	properties
 		isRolling
-		M
+		M						% window size in frames
 		sigAlpha
 		sigPhi	
 	end
