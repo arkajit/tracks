@@ -117,7 +117,7 @@ classdef CHMM < HMM
 		% Perform Expectation Maximization on a set of training examples.
 		%	Returns the HMM that maximizes the likelihood of the observed data.
 		% 
-		%	@param 		X 			cellarray 	Nx1
+		%	@param 		X 			mat					T x N
 		% @param 		maxIter	int					max number of EM iterations (default: 10)
 		% @return 	hmm 		CHMM
 		% @return 	L				double			log-likelihood
@@ -149,12 +149,13 @@ classdef CHMM < HMM
 		% Perform one iteration of EM starting from current model (self).
 		% Return a new model with increased likelihood.
 		%
-		% @param 	X 			cellarray		Nx1		training examples
+		% @param 	X 			mat		T x N		N training examples of length T
 		%	@return hmm			CHMM
 		% @return loglik 	double						the log likelihood of the new model
 		function [hmm, loglik] = one_em_iter(self, X)
 			S = self.S; 						% number of states
-			N = length(X);					% number of training examples
+			N = size(X, 2);					% number of training examples
+			T = size(X, 1);					% number of timesteps
 
 			Npi = zeros(S, 1);			% counts of initial states
 			NM = zeros(S, S);				% counts of transitions
@@ -170,12 +171,7 @@ classdef CHMM < HMM
 
 			%% E-Step
 			for i=1:N
-				x = X{i};
-				T = length(x); 				% number of timesteps in hidden chain
-				if (~T)
-					disp(sprintf('Training example %d is empty.', i));
-					continue;
-				end
+				x = X(:,i);
 				W = zeros(S, T);			% weights to update mean and variances
 
 				log_a = self.forward(x);
@@ -211,7 +207,7 @@ classdef CHMM < HMM
 			%% Compute means and variance
 			means = PM ./ PS;
 			for i=1:N
-				x = X{i};
+				x = X(:,i);
 				T = length(x);
 				if (~T)
 					continue;

@@ -63,9 +63,8 @@ classdef RandomTracks
 				N = 100;
 			end
 
-			tracks = cell(N, 1);
 			for i=1:N
-				tracks{i} = RandomTracks.fromModels(hmms, tau);
+				tracks(i) = RandomTracks.fromModels(hmms, tau);
 			end
 		end
 

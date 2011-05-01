@@ -45,21 +45,16 @@ classdef HMM
 
 		% sample N sequences of observations of length T from this HMM
 		function [X, S] = sample(self, N, T)
-			X = cell(N, 1);
-			S = cell(N, 1);
+			X = zeros(T, N);
+			S = zeros(T, N);
 			for i=1:N
-				x = zeros(T, 1);
-				s = zeros(T, 1);
-				s(1) = mnsmpl(self.pi);
-				x(1) = self.emit(s(1));
+				S(1,i) = mnsmpl(self.pi);
+				X(1,i) = self.emit(S(1,i));
 				
 				for t=2:T
-					s(t) = mnsmpl(self.M(s(t-1),:));
-					x(t) = self.emit(s(t));
+					S(t,i) = mnsmpl(self.M(S(t-1,i),:));
+					X(t,i) = self.emit(S(t,i));
 				end
-				
-				X{i} = x;
-				S{i} = s;
 			end
 
 			function [r] = mnsmpl(p) 
@@ -68,17 +63,11 @@ classdef HMM
 			end
 		end
 
-		function [x, s] = sampleOne(self, T)
-			[X, S] = self.sample(1, T);
-			x = X{1};
-			s = S{1};
-		end
-
 		function [S] = infer(self, X)
-			N = length(X);
-			S = cell(N, 1);
+			N = size(X,2);
+			S = zeros(size(X));
 			for i=1:N
-				S{i} = self.viterbi(X{i});
+				S(:,i) = self.viterbi(X(:,i));
 			end
 		end
 
