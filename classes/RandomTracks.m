@@ -104,11 +104,11 @@ classdef RandomTracks
       n = randi([floor(nSteps/4) floor(3*nSteps/4)]); % random step point
 
       D1 = diffusionCoeff*ones(n,1);
-      V1 = repmat([xvel1 0 0], n, 1);
+      V1 = repmat([xvel1 0.1 0.1], n, 1);
       t1 = RandomTracks.from(D1, V1, tau);
 
       D2 = diffusionCoeff*ones(nSteps-n,1);
-      V2 = repmat([xvel2 0 0], nSteps-n, 1);
+      V2 = repmat([xvel2 0.1 0.1], nSteps-n, 1);
       t2 = RandomTracks.from(D2, V2, tau);
     
       track = t1+t2;

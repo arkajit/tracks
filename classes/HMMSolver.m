@@ -1,4 +1,4 @@
-classdef HMMSolver
+classdef HMMSolver < handle
 	% represents the logic used to solve a Track using an HMM
 
 	properties
@@ -51,6 +51,10 @@ classdef HMMSolver
 
 	methods (Static)
 
+		function [frac] = pctErr(A, B)
+			frac = 100 * norm(A-B) / norm(A);
+		end
+
 		function [frac, errs, order] = errors(n, A, B)
 			errs = -1;
 			alen = length(A);
@@ -92,7 +96,7 @@ classdef HMMSolver
 		% 
 		% @param tracks 	cellarray 	Nx1
 		% @param maxIter	int					number of EM iterations
-		function [self] = train(self, tracks, maxIter)
+		function train(self, tracks, maxIter)
 			N = length(tracks);
 			if (~N)
 				return;
@@ -119,7 +123,7 @@ classdef HMMSolver
 			self.hmm = self.hmm.em(X, maxIter);
 		end
 
-		function [self] = trainXYZ(self, tracks)
+		function trainXYZ(self, tracks)
 			N = length(tracks);
 			if (~N)
 				return;
@@ -150,13 +154,19 @@ classdef HMMSolver
 			self.hmms{3} = CHMM.fit(self.S, Z);
 		end
 
-		function [D, V] = test(self, tracks)
+		function [D, V, errs] = test(self, tracks)
 			N = length(tracks);		% no. of test examples
 			D = cell(N, 1);
 			V = cell(N, 1);
+			errs = zeros(N, 4);
 
 			for i=1:N
-				[D{i}, V{i}] = self.infer(tracks{i});
+				t = tracks{i};
+				[D{i}, V{i}] = self.infer(t);
+				errs(i,1) = HMMSolver.pctErr(t.D, D{i}(:,1));
+				for j=1:3
+					errs(i,j+1) = HMMSolver.pctErr(t.V(:,j), V{i}(:,j));
+				end
 			end
 		end
 

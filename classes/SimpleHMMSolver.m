@@ -1,4 +1,4 @@
-classdef SimpleHMMSolver
+classdef SimpleHMMSolver < handle
 
 	properties
 		Dmax
@@ -46,15 +46,7 @@ classdef SimpleHMMSolver
       end
 
 			S = self.nBins^2;
-			pi = ones(S, 1);
-			if S == 1
-				M = [1];
-			else
-				M = ones(S) + ((S-1)*self.odds - 1)*eye(S); 
-				% diag. entries = odds*(S-1)
-			end
-
-			mc = MarkovChain(pi, M);
+			mc = MarkovChain.fromOdds(S, self.odds);
 			means = reshape(repmat(mus, self.nBins, 1), S, 1);
 			stddevs = reshape(repmat(sigmas', self.nBins, 1), S, 1);
 			self.hmm = CHMM(mc, means, stddevs);
@@ -72,7 +64,7 @@ classdef SimpleHMMSolver
 		end
 
 		function [D, V] = solve(self, track)
-			self = self.selectModel(track);
+			self.selectModel(track);
 			[D, V] = self.infer(track);
 		end
 

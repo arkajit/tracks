@@ -1,5 +1,5 @@
-classdef TrackSolver
-	
+classdef TrackSolver < handle
+
 	methods (Abstract)
 		[D, V] = solve(self, track);	
 	end
