@@ -120,9 +120,9 @@ classdef MSDSolver < TrackSolver
       R = track.positions;
       T = size(R, 1);
 
-      D = zeros(T, 1);
-      V = zeros(T, 1);
-      pA = zeros(T, 1);
+      D = zeros(T-1, 1);
+      V = zeros(T-1, 1);
+      pA = zeros(T-1, 1);
 
 			function [yhat] = fitFunc(b, X)
 				A = b(1);
@@ -130,7 +130,7 @@ classdef MSDSolver < TrackSolver
 				yhat = A * X.^alpha;
 			end
     
-      for i=1:T
+      for i=1:T-1
         beta = MSDSolver.plfit(R, i, self.M, @fitFunc);
         A = beta(1);
         alpha = beta(2);
@@ -142,9 +142,9 @@ classdef MSDSolver < TrackSolver
 								 phi <= self.sigPhi
 								]))
           pA(i) = 1;
-          V(i) = sqrt(A);
+          V(i) = sqrt(A) / track.tau;
         else
-          D(i) = A/6; % 6 for 3D and assumes tau = 1
+          D(i) = A/(6*track.tau); % 6 for 3D and assumes tau = 1
         end
       end
 		end
@@ -153,8 +153,8 @@ classdef MSDSolver < TrackSolver
       R = track.positions;
       T = size(R, 1);
 
-      D = zeros(T, 1);
-      V = zeros(T, 1);
+      D = zeros(T-1, 1);
+      V = zeros(T-1, 1);
 
 			function [yhat] = fitFunc(b, X)
 				A = b(1);
@@ -162,12 +162,12 @@ classdef MSDSolver < TrackSolver
 				yhat = A * X + B * X.^2;
 			end
   
-      for i=1:T
+      for i=1:T-1
         beta = MSDSolver.plfit(R, i, self.M, @fitFunc);
         A = beta(1);
         B = beta(2);
-        D(i) = A/6;
-        V(i) = sqrt(B);
+        D(i) = A/(6*track.tau);
+        V(i) = sqrt(B) / track.tau;
       end
 
 		end
@@ -211,6 +211,18 @@ classdef MSDSolver < TrackSolver
 			else
 				[D, V] = self.MSD(track);
 			end		
+		end
+
+		function [D, V, errs] = test(self, tracks)
+			N = length(tracks);
+			D = cell(N, 1);
+			V = cell(N, 1);
+			errs = zeros(N, 2);
+			for i=1:N
+				t = tracks(i);
+				[D{i}, V{i}] = self.solve(t);
+				errs(i,:) = t.compare(D{i}, V{i}, true);
+			end
 		end
 
 	end

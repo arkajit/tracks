@@ -13,17 +13,23 @@ classdef SimpleHMMSolver < handle
 		function [self] = SimpleHMMSolver(Dmax, Vmax, nBins, odds)
 			self.Dmax = Dmax;
 			self.Vmax = Vmax;
-			self.nBins = nBins;
-			if (nargin == 4)
-				self.odds = odds;
-			else 
+
+			if (nargin < 3)
+				self.nBins = 20;
+			else
+				self.nBins = nBins;
+			end
+
+			if (nargin < 4)
 				self.odds = 10;
+			else 
+				self.odds = odds;
 			end
 		end
 
-		function [self] = selectModel(self, track)
-			maxstd = sqrt(2*self.Dmax*track.tau);
-			maxmean = self.Vmax*track.tau;
+		function [self] = selectModel(self, tau)
+			maxstd = sqrt(2*self.Dmax*tau);
+			maxmean = self.Vmax*tau;
 
 			if self.Dmax == 0
         sigmas = [0.1]; % disallowing all noise is too error-prone
@@ -64,8 +70,27 @@ classdef SimpleHMMSolver < handle
 		end
 
 		function [D, V] = solve(self, track)
-			self.selectModel(track);
+			self.selectModel(track.tau);
 			[D, V] = self.infer(track);
+		end
+
+		function [D, V, errs] = test(self, tracks)
+			N = length(tracks);
+			if (~N)
+				return;
+			else
+				tau = tracks(1).tau;
+				self.selectModel(tau);
+			end
+			D = cell(N, 1);
+			V = cell(N, 1);
+			errs = zeros(N, 4);
+
+			for i=1:N
+				t = tracks(i);
+				[D{i}, V{i}] = self.infer(t);
+				errs(i,:) = t.compare(D{i}(:,1), V{i});
+			end
 		end
 
 	end

@@ -2,8 +2,9 @@ classdef HMMSolver < handle
 	% represents the logic used to solve a Track using an HMM
 
 	properties
-		S 		% expected number of states
-		hmms
+		S 				% expected number of states
+		hmms			% list of hmms for each dimension
+		options		% learning options (default, if not provided)
 	end	
 
 	methods (Access = private)
@@ -50,46 +51,7 @@ classdef HMMSolver < handle
 			frac = 100 * norm(A-B) / norm(A);
 		end
 
-		function [frac, errs, order] = errors(n, A, B)
-			errs = -1;
-			alen = length(A);
-			order = [];
-			for f=perms(1:n)'
-				nErrs = 0;
-				
-				% compute the errors with this permutation
-				for i=1:alen
-					nErrs = nErrs + sum(A{i} ~= f(B{i}));
-					if (errs >= 0 && nErrs > errs)
-						break;
-					end
-				end
-
-				% update best error count so far
-				if (errs < 0 || nErrs < errs)
-					errs = nErrs;
-					order = f;
-				end
-			end
-
-			frac = errs / (alen * length(A{1}));
-		end
-
-	end
-
-	methods
-		
-		% constructor
-		function [self] = HMMSolver(S) 
-			self.S = S;
-		end
-
-		% Select the ML HMM that explains the observed tracks.
-		% Require all tracks to have the same timestep.
-		% 
-		% @param tracks 	mat					1xN
-		% @param maxIter	int					number of EM iterations
-		function train(self, tracks)
+		function [X, Y, Z, tau] = readTracks(tracks)
 			N = length(tracks);
 			if (~N)
 				return;
@@ -114,11 +76,34 @@ classdef HMMSolver < handle
 				Y(:,i) = track.steps(:,2);
 				Z(:,i) = track.steps(:,3);
 			end
+		end
 
+	end % END Static methods
+
+	methods
+		
+		% constructor
+		function [self] = HMMSolver(S, options) 
+			self.S = S;
+			if (nargin == 2)
+				self.options = options;
+			end
+		end
+
+		% Select the ML HMM that explains the observed tracks.
+		% Require all tracks to have the same timestep.
+		% 
+		% @param tracks 	mat					1xN
+		% @param maxIter	int					number of EM iterations
+		%
+		%	@return	L				vec					log-likelihood in each dimension
+		function L = train(self, tracks)
+			[X,Y,Z] = HMMSolver.readTracks(tracks);
 			self.hmms = CHMM.empty(3,0);
-			self.hmms(1) = CHMM.fit(self.S, X);
-			self.hmms(2) = CHMM.fit(self.S, Y);
-			self.hmms(3) = CHMM.fit(self.S, Z);
+			L = zeros(3, 1);
+			[self.hmms(1), L(1)] = CHMM.fit(self.S, X, self.options);
+			[self.hmms(2), L(2)] = CHMM.fit(self.S, Y, self.options);
+			[self.hmms(3), L(3)] = CHMM.fit(self.S, Z, self.options);
 		end
 
 		function [D, V, errs] = test(self, tracks)
@@ -130,10 +115,13 @@ classdef HMMSolver < handle
 			for i=1:N
 				t = tracks(i);
 				[D{i}, V{i}] = self.infer(t);
-				errs(i,1) = HMMSolver.pctErr(t.D, D{i}(:,1));
-				for j=1:3
-					errs(i,j+1) = HMMSolver.pctErr(t.V(:,j), V{i}(:,j));
-				end
+
+				errs(i,:) = t.compare(D{i}(:,1), V{i});
+				% TODO(arkajit): should we do this minimum? usually if we generated our
+				% test/train data by sampling a true HMM, we use the first HMM's D
+				errs(i,1) = min([Track.percentError(t.D, D{i}(:,1)), ...
+												 Track.percentError(t.D, D{i}(:,2)), ...
+												 Track.percentError(t.D, D{i}(:,3))]);
 			end
 		end
 
