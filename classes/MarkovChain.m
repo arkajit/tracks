@@ -5,6 +5,7 @@ classdef MarkovChain
       S         % number of states
       start     % initial distribution of states
       trans     % S x S transition matrix
+			odds			% if the transition matrix is parameterized by odds
     end
     
     methods
@@ -17,7 +18,21 @@ classdef MarkovChain
         end
         self.start = pi ./ sum(pi);
         self.trans = M ./ repmat(sum(M, 2), 1, self.S);
+				self.odds = NaN;
       end
+
+			function [states] = sample(self, T)
+				states = zeros(T, 1);
+				states(1) = mnsmpl(self.start);
+				for t=2:T
+					states(t) = mnsmpl(self.trans(states(t-1),:));
+				end
+
+				function [r] = mnsmpl(p) 
+					p = reshape(p, 1, length(p));
+					r = find(mnrnd(1, p)==1);
+				end
+			end
 
     end
 
@@ -37,13 +52,17 @@ classdef MarkovChain
 
 			function mc = fromOdds(S, odds)
 				pi = rand(S, 1);
+				M = MarkovChain.oddsMatrix(S, odds);
+				mc = MarkovChain(pi, M);
+			end
+
+			function M = oddsMatrix(S, odds)
 				M = ones(S, S);
 				if (S > 1)
 					for i=1:S
 						M(i,i) = (S-1)*odds; 
 					end
 				end
-				mc = MarkovChain(pi, M);
 			end
 
 		end
