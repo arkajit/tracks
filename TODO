@@ -9,7 +9,9 @@ Algorithm Improvements:
 Writing / Figure Tips:
 
 	- Present opposing methods in a balanced, unbiased way. 
-	- Make figures similar to 3.9 and 3.10, but now vary the transition probability
+	- Make figures similar to 3.9 and 3.10 (D/V vs. #steps for
+	  actual/tight/loose/overtight Dmax/Vmax estimates), 
+		but now vary the transition probability
 		between states instead of varying the Vmax and Dmax. 
 	- For all of the rolling MSD figures (figures 3.11, 3.13, 3.14, 3.15, 3.18),
 		you should show results for two or three different window sizes.  Use the
