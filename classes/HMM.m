@@ -153,5 +153,31 @@ classdef HMM
 			p = reshape(p./sum(p), size(log_p) );
 		end
 
+		% assumes we're comparing vector of discrete state labels
+		function [frac, errs, order] = errors(n, A, B)
+			errs = -1;
+			[T, alen] = size(A);
+			order = [];
+			for f=perms(1:n)'
+				nErrs = 0;
+				
+				% compute the errors with this permutation
+				for i=1:alen
+					nErrs = nErrs + sum(A(:,i) ~= f(B(:,i)));
+					if (errs >= 0 && nErrs > errs)
+						break;
+					end
+				end
+
+				% update best error count so far
+				if (errs < 0 || nErrs < errs)
+					errs = nErrs;
+					order = f;
+				end
+			end
+
+			frac = errs / (alen * T);
+		end
+
 	end
 end

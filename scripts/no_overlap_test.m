@@ -9,9 +9,21 @@ hmm = CHMM(MarkovChain.random(2), [0; 5], [1; 0.5]);
 hmm0 = CHMM.random(2, 10, 5);
 tic; hmmEst = hmm0.em(X, 10); toc
 
-hmmEst.plotNormals();
-
 tic; Sest = hmmEst.infer(X); toc
 
-errs = HMMSolver.errors(2, S, Sest);
-disp(sprintf('Error: %4.2f%%', 100*errs / (N*T)))
+frac = HMM.errors(2, S, Sest);
+disp(sprintf('Error: %4.2f%%', 100*frac))
+
+figure;
+subplot(311);
+hmm.plotNormals();
+title('True HMM');
+
+subplot(312);
+hmm0.plotNormals();
+title('Original HMM');
+
+subplot(313);
+hmmEst.plotNormals();
+title('Estimated HMM');
+
