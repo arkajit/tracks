@@ -43,21 +43,29 @@ classdef CHMM < HMM
 
 		function hmm = fromOdds(S, odds)
 			hmm = CHMM.random(S);
+			if (nargin < 2 || ~isnumeric(odds))
+				odds = 10;
+			end
 			hmm.chain = MarkovChain.fromOdds(S, odds);
 		end
 
-		function [hmm, L] = fit(S, X, nRestarts, maxIter)
-			if (nargin < 3)
+		function [hmm, L] = fit(S, X, options, nRestarts, maxIter)
+			if (nargin < 4)
 				nRestarts = 2;
 			end
 
-			if (nargin < 4)
+			if (nargin < 5)
 				maxIter = 10;	
 			end
 
 			for i=1:nRestarts
 				disp(sprintf('EM restart %d: ', i));
-				hmm0 = CHMM.random(S);
+				if (isstruct(options))
+					hmm0 = CHMM.fromOdds(S);
+					hmm0.options = options;
+				else
+					hmm0 = CHMM.random(S);
+				end
 				[hmm1, L1] = hmm0.em(X, maxIter);	
 				if (i == 1 || isnan(L) || L1 > L)
 					hmm = hmm1;
@@ -72,8 +80,8 @@ classdef CHMM < HMM
 
 		function self = CHMM(mc, means, stddevs, options)
 			self.chain = mc;
-			self.means = means;
-			self.stddevs = stddevs;	
+			[self.means, order] = sort(means);
+			self.stddevs = stddevs(order);	
 			if (length(self.means) ~= self.chain.S || ...
 					(length(self.stddevs) ~= self.chain.S))
 				disp('Error: incorrect number of means or stddevs');
@@ -82,6 +90,8 @@ classdef CHMM < HMM
 			if (nargin < 4)
 				self.options.learnStart = true;
 				self.options.learnTrans = true;
+				self.options.learnOdds = false;
+				self.options.learnEmit = true;
 			else
 				self.options = options;
 			end
@@ -157,8 +167,9 @@ classdef CHMM < HMM
 			N = size(X, 2);					% number of training examples
 			T = size(X, 1);					% number of timesteps
 
-			Npi = zeros(S, 1);			% counts of initial states
-			NM = zeros(S, S);				% counts of transitions
+			% Laplace correction: start with a pseudo-count of 1 instead of 0
+			Npi = ones(S, 1);			% counts of initial states
+			NM = ones(S, S);				% counts of transitions
 
 			NW = cell(N, 1);				% unnormalized weights of each state
 			PS = zeros(S, 1);				% probs of states across all data
@@ -171,29 +182,30 @@ classdef CHMM < HMM
 
 			%% E-Step
 			for i=1:N
+				%% compute initial statistics
 				x = X(:,i);
-				W = zeros(S, T);			% weights to update mean and variances
-
 				log_a = self.forward(x);
 				log_b = self.backward(x);
 				probX = log_sum_exp(log_a(:,end),1);
 				loglik = loglik + probX;
 
-				% calculate update weights
-				log_w = log_a + log_b - probX;
-				W = exp(log_w);
-				NW{i} = W;
+				%% calculate update weights
+				if (self.options.learnEmit)
+					log_w = log_a + log_b - probX;
+					W = exp(log_w);
+					NW{i} = W;
 
-				PS = PS + sum(W, 2);
-				PM = PM + W * x;
+					PS = PS + sum(W, 2);
+					PM = PM + W * x;
+				end
 
+				%% update initial state counts	
 				if (self.options.learnStart) 
-					% update initial state counts	
 					Npi = Npi + norm_exp(log_a(:,1)+log_b(:,1));
 				end
 
+				%% update transition counts
 				if (self.options.learnTrans)
-					% update transition counts
 					for t=1:T-1	
 						log_A = repmat(log_a(:,t),1,S);
 						log_B = repmat(log_b(:,t+1),1,S);
@@ -205,20 +217,22 @@ classdef CHMM < HMM
 			end	% END loop over training examples
 
 			%% Compute means and variance
-			means = PM ./ PS;
-			for i=1:N
-				x = X(:,i);
-				T = length(x);
-				if (~T)
-					continue;
-				end
+			if (self.options.learnEmit)
+				means = PM ./ PS;
+				for i=1:N
+					x = X(:,i);
+					T = length(x);
+					if (~T)
+						continue;
+					end
 
-				W = NW{i};
-				for s=1:S
-					PV(s) = PV(s) + W(s,:) * (x-means(s)).^2;
+					W = NW{i};
+					for s=1:S
+						PV(s) = PV(s) + W(s,:) * (x-means(s)).^2;
+					end
 				end
+				stddevs = sqrt(PV ./ PS);
 			end
-			stddevs = sqrt(PV ./ PS);
 
 			%% M-Step (for pi and M)
 			if (self.options.learnStart)
@@ -227,13 +241,20 @@ classdef CHMM < HMM
 				pi = self.chain.start;
 			end
 
+			odds = NaN;
 			if (self.options.learnTrans)
 				M = NM ./ repmat(sum(NM, 2), 1, S);
+			elseif (self.options.learnOdds)
+				stay = diag(NM);
+				swap = NM - diag(stay);
+				odds = sum(stay) / sum(sum(swap));
+				M = MarkovChain.oddsMatrix(S, odds);
 			else
 				M = self.chain.trans;
 			end
 
 			hmm = CHMM(MarkovChain(pi, M), means, stddevs, self.options);
+			hmm.chain.odds = odds;
 		end
 
 	end

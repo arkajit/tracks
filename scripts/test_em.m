@@ -1,3 +1,7 @@
+% test_em: Build a simple true model, sample a training and test set from it.
+% Starting from a random initial model, try to learn the true model using EM.
+
+%% Build a true model
 S = 3;
 means = [-3 0 3]';
 stddevs = [0.5 1 2]';
@@ -14,6 +18,7 @@ T = 200; 	% length of sequences
 disp('Training with EM...');
 tic;
 hmm0 = CHMM.random(S, 5, 3);
+hmm_orig = hmm0;
 [hmm_est, L] = hmm0.em(X);
 
 % do several restarts of HMM
@@ -23,6 +28,7 @@ for i=1:Nrestarts
 	[hmm1, L1] = hmm0.em(X);
 	if (L1 > L)
 		hmm_est = hmm1;
+		hmm_orig = hmm0;
 		L = L1;
 	end	
 end
@@ -37,17 +43,25 @@ Zest = hmm_est.infer(X);
 toc
 
 disp('Computing errors...');
-[~, idx] = sort(hmm_est.means);
-% invert idx function
-iidx = zeros(size(idx));
-for i=1:length(idx)
-	iidx(idx(i)) = i;
-end
 errs = zeros(Ntest, 1);
 for i=1:Ntest
-	zest = iidx(Zest{i}); 	% interpret states in sorted order
-	ztru = Z{i};
+	zest = Zest(:,i); 	% states already sorted by mean
+	ztru = Z(:,i);
 	errs(i) = sum(zest ~= ztru);
 end
 
-plot(errs);
+plot(errs/T);
+title('Percent Error for Test Sequences');
+
+figure;
+subplot(311);
+hmm.plotNormals();
+title('True HMM');
+
+subplot(312);
+hmm_orig.plotNormals();
+title('Initial HMM');
+
+subplot(313);
+hmm_est.plotNormals();
+title('Estimated HMM');
