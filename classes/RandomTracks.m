@@ -73,23 +73,23 @@ classdef RandomTracks
 				T = 100;
 			end
 
-			[~, Sx] = hmms{1}.sampleOne(T);
-			[~, Sy] = hmms{2}.sampleOne(T);
-			[~, Sz] = hmms{3}.sampleOne(T);
+			[~, Sx] = hmms(1).sample(1, T);
+			[~, Sy] = hmms(2).sample(1, T);
+			[~, Sz] = hmms(3).sample(1, T);
 
 			D = zeros(T, 1);
-			D = (hmms{1}.stddevs(Sx) .^ 2) ./ (2 * tau);
+			D = (hmms(1).stddevs(Sx) .^ 2) ./ (2 * tau);
 			
 			V = zeros(T, 3);
-			V(:,1) = hmms{1}.means(Sx) ./ tau;
-			V(:,2) = hmms{2}.means(Sy) ./ tau;
-			V(:,3) = hmms{3}.means(Sz) ./ tau;
+			V(:,1) = hmms(1).means(Sx) ./ tau;
+			V(:,2) = hmms(2).means(Sy) ./ tau;
+			V(:,3) = hmms(3).means(Sz) ./ tau;
 			track = RandomTracks.from(D, V, tau);
 		end
 
     function [track] = diffusion(nSteps, diffusionCoeff, tau)
       D = diffusionCoeff*ones(nSteps,1);
-      V = zeros(S, 3);
+      V = zeros(nSteps, 3);
       track = RandomTracks.from(D, V, tau);
     end
     
@@ -97,6 +97,20 @@ classdef RandomTracks
       D = zeros(nSteps, 1);
       V = repmat(velocity, nSteps, 1);
       track = RandomTracks.from(D, V, tau); 
+    end
+
+    function [track] = diffStep(nSteps, d1, d2, tau) 
+      n = randi([floor(nSteps/4) floor(3*nSteps/4)]); % random step point
+
+      D1 = d1*ones(n,1);
+      V1 = zeros(n, 3);
+      t1 = RandomTracks.from(D1, V1, tau);
+
+      D2 = d2*ones(nSteps-n,1);
+      V2 = zeros(nSteps-n, 3);
+      t2 = RandomTracks.from(D2, V2, tau);
+    
+      track = t1+t2;
     end
 
     function [track] = step(nSteps, diffusionCoeff, xvel1, xvel2, tau) 
@@ -113,27 +127,35 @@ classdef RandomTracks
       track = t1+t2;
     end
 
-    function [track] = fromParams(nSteps, Dmax, Vmax, tau) 
+    function [track] = fromParams(nSteps, Dmax, Vmax, tau, smooth) 
       D = Dmax*rand(nSteps,1);
       V = 2*Vmax*rand(nSteps,3)-Vmax;
 
-      % smooth out transitions
-      i = 1;
-      while i < 0.9*nSteps
-        j = randi([i,nSteps]);
-        D(i:j-1) = D(i);
-        i = j;
-      end
-      D(i:end) = D(i);
+			if (nargin < 5)
+				smooth = true;
+			else
+				smooth = false;
+			end
+		
+			if (smooth)	
+				% smooth out transitions
+				i = 1;
+				while i < 0.9*nSteps
+					j = randi([i,nSteps]);
+					D(i:j-1) = D(i);
+					i = j;
+				end
+				D(i:end) = D(i);
 
-      % do V transitions independently of D
-      i = 1;
-      while i < 0.9*nSteps
-        j = randi([i,nSteps]);
-        V(i:j-1,:) = repmat(V(i,:), j-i, 1);
-        i = j;
-      end
-      V(i:end,:) = repmat(V(i,:), nSteps-i+1, 1);
+				% do V transitions independently of D
+				i = 1;
+				while i < 0.9*nSteps
+					j = randi([i,nSteps]);
+					V(i:j-1,:) = repmat(V(i,:), j-i, 1);
+					i = j;
+				end
+				V(i:end,:) = repmat(V(i,:), nSteps-i+1, 1);
+			end
 
       track = RandomTracks.from(D, V, tau);
     end 
