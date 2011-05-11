@@ -6,6 +6,7 @@ classdef SimpleHMMSolver < handle
 		nBins
 		odds
 		hmm
+		options
 	end
 
 	methods
@@ -25,6 +26,11 @@ classdef SimpleHMMSolver < handle
 			else 
 				self.odds = odds;
 			end
+
+			self.options.learnStart = true;
+			self.options.learnTrans = false;
+			self.options.learnOdds = true;
+			self.options.learnEmit = false;
 		end
 
 		function [self] = selectModel(self, tau)
@@ -74,11 +80,27 @@ classdef SimpleHMMSolver < handle
 			[D, V] = self.infer(track);
 		end
 
+		function [L] = train(self, tracks)
+			N = length(tracks);
+			if (~N)
+				return
+			else
+				tau = tracks(1).tau;
+				self.selectModel(tau);
+				self.hmm.options = self.options;
+			end
+
+			[X,Y,Z] = HMMSolver.readTracks(tracks);
+			self.hmm = self.hmm.em(X);
+			self.hmm = self.hmm.em(Y);
+			[self.hmm, L] = self.hmm.em(Z);
+		end
+
 		function [D, V, errs] = test(self, tracks)
 			N = length(tracks);
 			if (~N)
 				return;
-			else
+			elseif (isempty(self.hmm))
 				tau = tracks(1).tau;
 				self.selectModel(tau);
 			end
