@@ -42,6 +42,10 @@ classdef Track
       end
     end
 
+		function [frac] = percentError(A, B)
+			frac = 100 * norm(A-B) / norm(A);
+		end
+
     % From a trajectory (position time series), compute its length and the
     % sequence of steps and angles.
     % 
@@ -175,11 +179,19 @@ classdef Track
 
     % compare: determine the errors from given predictions from
     % true values if known
-    function [errD, errV] = compare(self, D, V)
-      De = abs(self.D - D);
-      Ve = abs(self.V - V); % percentage error fails when true V = 0
-      errD = norm(De) / sqrt(self.T - 1); % average error per timepoint
-      errV = [norm(Ve(:,1)); norm(Ve(:,2)); norm(Ve(:,3))] ./ sqrt(self.T-1);
+    function [errs] = compare(self, D, V, useMag)
+			if (nargin < 4)
+				useMag = false;
+			end
+			errs(1) = Track.percentError(self.D, D);
+
+			if (useMag)
+				errs(2) = Track.percentError(self.normV, V);
+			else
+				for j=1:3
+					errs(j+1) = Track.percentError(self.V(:,j), V(:,j));
+				end
+			end
     end
 
     % plus: add another track at the end of this one and return a new instance
