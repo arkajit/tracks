@@ -213,16 +213,8 @@ classdef MSDSolver < TrackSolver
 			end		
 		end
 
-		function [D, V, errs] = test(self, tracks)
-			N = length(tracks);
-			D = cell(N, 1);
-			V = cell(N, 1);
-			errs = zeros(N, 2);
-			for i=1:N
-				t = tracks(i);
-				[D{i}, V{i}] = self.solve(t);
-				errs(i,:) = t.compare(D{i}, V{i}, true);
-			end
+		function [errs] = compare(self, track, D, V)
+			errs = track.compare(D, V, true);
 		end
 
 	end

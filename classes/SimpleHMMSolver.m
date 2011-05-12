@@ -1,4 +1,4 @@
-classdef SimpleHMMSolver < handle
+classdef SimpleHMMSolver < TrackSolver
 
 	properties
 		Dmax
@@ -76,10 +76,17 @@ classdef SimpleHMMSolver < handle
 		end
 
 		function [D, V] = solve(self, track)
-			self.selectModel(track.tau);
+			if (isempty(self.hmm))
+				self.selectModel(track.tau);
+			end
 			[D, V] = self.infer(track);
 		end
 
+		function [errs] = compare(self, track, D, V)
+			errs = track.compare(D(:,1), V);
+		end	
+
+		% NOTE(arkajit): still under construction
 		function [L] = train(self, tracks)
 			N = length(tracks);
 			if (~N)
@@ -94,25 +101,6 @@ classdef SimpleHMMSolver < handle
 			self.hmm = self.hmm.em(X);
 			self.hmm = self.hmm.em(Y);
 			[self.hmm, L] = self.hmm.em(Z);
-		end
-
-		function [D, V, errs] = test(self, tracks)
-			N = length(tracks);
-			if (~N)
-				return;
-			elseif (isempty(self.hmm))
-				tau = tracks(1).tau;
-				self.selectModel(tau);
-			end
-			D = cell(N, 1);
-			V = cell(N, 1);
-			errs = zeros(N, 4);
-
-			for i=1:N
-				t = tracks(i);
-				[D{i}, V{i}] = self.infer(t);
-				errs(i,:) = t.compare(D{i}(:,1), V{i});
-			end
 		end
 
 	end

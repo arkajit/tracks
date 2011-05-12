@@ -1,4 +1,4 @@
-classdef HMMSolver < handle
+classdef HMMSolver < TrackSolver
 	% represents the logic used to solve a Track using an HMM
 
 	properties
@@ -90,39 +90,33 @@ classdef HMMSolver < handle
 			end
 		end
 
+		function [D, V] = solve(self, track)
+			if (~ isempty(self.hmms))
+				[D, V] = self.infer(track);
+			else
+				fprintf('Did you forget to train the solver?\n');
+				return
+			end
+		end
+
+		function [errs] = compare(self, track, D, V)
+			errs = track.compare(D(:,1), V);
+		end
+
 		% Select the ML HMM that explains the observed tracks.
 		% Require all tracks to have the same timestep.
 		% 
 		% @param tracks 	mat					1xN
 		% @param maxIter	int					number of EM iterations
 		%
-		%	@return	L				vec					log-likelihood in each dimension
-		function L = train(self, tracks)
+		%	@return	LL				vec					log-likelihood in each dimension
+		function LL = train(self, tracks)
 			[X,Y,Z] = HMMSolver.readTracks(tracks);
 			self.hmms = CHMM.empty(3,0);
-			L = zeros(3, 1);
-			[self.hmms(1), L(1)] = CHMM.fit(self.S, X, self.options);
-			[self.hmms(2), L(2)] = CHMM.fit(self.S, Y, self.options);
-			[self.hmms(3), L(3)] = CHMM.fit(self.S, Z, self.options);
-		end
-
-		function [D, V, errs] = test(self, tracks)
-			N = length(tracks);		% no. of test examples
-			D = cell(N, 1);
-			V = cell(N, 1);
-			errs = zeros(N, 4);
-
-			for i=1:N
-				t = tracks(i);
-				[D{i}, V{i}] = self.infer(t);
-
-				errs(i,:) = t.compare(D{i}(:,1), V{i});
-				% TODO(arkajit): should we do this minimum? usually if we generated our
-				% test/train data by sampling a true HMM, we use the first HMM's D
-				errs(i,1) = min([Track.percentError(t.D, D{i}(:,1)), ...
-												 Track.percentError(t.D, D{i}(:,2)), ...
-												 Track.percentError(t.D, D{i}(:,3))]);
-			end
+			LL = zeros(3, 1);
+			[self.hmms(1), LL(1)] = CHMM.fit(self.S, X, self.options);
+			[self.hmms(2), LL(2)] = CHMM.fit(self.S, Y, self.options);
+			[self.hmms(3), LL(3)] = CHMM.fit(self.S, Z, self.options);
 		end
 
 	end
