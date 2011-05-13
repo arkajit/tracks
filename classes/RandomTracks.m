@@ -68,6 +68,19 @@ classdef RandomTracks
 			end
 		end
 
+		function [track] = fromChain(mc, tau, T)
+			Dmax = 2;
+			Vmax = 5;
+			S = mc.S;
+			diff = Dmax*rand(S, 1);
+			vels = 2*Vmax*rand(S, 3)-Vmax;
+
+			states = mc.sample(T);		
+			D = diff(states);
+			V = vels(states,:);	
+			track = RandomTracks.from(D, V, tau);
+		end
+
 		function [track] = fromModels(hmms, tau, T)
 			if (nargin < 3)
 				T = 100;
@@ -133,8 +146,6 @@ classdef RandomTracks
 
 			if (nargin < 5)
 				smooth = true;
-			else
-				smooth = false;
 			end
 		
 			if (smooth)	
