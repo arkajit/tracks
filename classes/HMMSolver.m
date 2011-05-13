@@ -22,26 +22,12 @@ classdef HMMSolver < TrackSolver
       V = zeros(size(track.V));
 
       for i=1:3
-				if (~ isempty(self.hmms))
-					hmm = self.hmms(i);
-				else 
-					hmm = self.hmm;
-				end
-
+				hmm = self.hmms(i);
 				states = hmm.viterbi(track.steps(:,i));
 				V(:,i) = hmm.means(states) ./ track.tau;
 				D(:,i) = (hmm.stddevs(states) .^ 2) ./ (2 * track.tau);
       end
 		end	
-
-		% Initialize a HMM with random parameters
-		% Will be used to start EM
-		%
-		%	@param 	tau		double	timestep in seconds
-		% @return hmm		CHMM		a random, initial model
-		function [hmm] = init(self, tau)
-			hmm = CHMM.random(self.S);
-		end
 
 	end
 
@@ -84,7 +70,12 @@ classdef HMMSolver < TrackSolver
 		
 		% constructor
 		function [self] = HMMSolver(S, options) 
-			self.S = S;
+			if (length(S) == 1)
+				self.S = [S; S; S];
+			else
+				self.S = S;
+			end
+
 			if (nargin == 2)
 				self.options = options;
 			end
@@ -114,9 +105,9 @@ classdef HMMSolver < TrackSolver
 			[X,Y,Z] = HMMSolver.readTracks(tracks);
 			self.hmms = CHMM.empty(3,0);
 			LL = zeros(3, 1);
-			[self.hmms(1), LL(1)] = CHMM.fit(self.S, X, self.options);
-			[self.hmms(2), LL(2)] = CHMM.fit(self.S, Y, self.options);
-			[self.hmms(3), LL(3)] = CHMM.fit(self.S, Z, self.options);
+			[self.hmms(1), LL(1)] = CHMM.fit(self.S(1), X, self.options);
+			[self.hmms(2), LL(2)] = CHMM.fit(self.S(2), Y, self.options);
+			[self.hmms(3), LL(3)] = CHMM.fit(self.S(3), Z, self.options);
 		end
 
 	end
