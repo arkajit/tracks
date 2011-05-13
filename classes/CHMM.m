@@ -50,6 +50,10 @@ classdef CHMM < HMM
 		end
 
 		function [hmm, L] = fit(S, X, options, nRestarts, maxIter)
+			if (nargin < 3)
+				options = [];
+			end
+	
 			if (nargin < 4)
 				nRestarts = 2;
 			end
