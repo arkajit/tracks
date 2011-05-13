@@ -8,6 +8,9 @@ classdef TrackSolver < handle
 	methods
 		function [res] = test(self, tracks)
 			N = length(tracks);
+			res(N).D = [];
+			res(N).V = [];
+			res(N).errs = [];
 			for i=1:N
 				t = tracks(i);
 				[res(i).D, res(i).V] = self.solve(t);
@@ -17,12 +20,15 @@ classdef TrackSolver < handle
 	end
 
 	methods (Static)
-		function solveAll(track, solvers)
-			tp = TrackPlotter(track);
-			for s=solvers
-				[D, V] = s.solve(track);
-				tp.plotDiffusion(D);
-				tp.plotVelocity(V);
+		function [results] = testAll(solvers, tracks)
+			S = length(solvers);
+			N = length(tracks);
+			res(S, N).D = [];
+			res(S, N).V = [];
+			res(S, N).errs = [];
+			for i=1:S
+				s = solvers(i);
+				res(i,:) = s.test(tracks);
 			end
 		end
 	end	
