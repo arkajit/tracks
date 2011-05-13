@@ -194,6 +194,24 @@ classdef Track
 			end
     end
 
+
+		% percent error between state labels
+		function [errs] = compareStates(self, D, V)
+			[~, a{1}, A{1}] = unique(self.D);
+			[~, a{2}, A{2}] = unique(self.V(:,1));
+			[~, a{3}, A{3}] = unique(self.V(:,2));
+			[~, a{4}, A{4}] = unique(self.V(:,3));
+
+			[~, ~, B{1}] = unique(D);
+			[~, ~, B{2}] = unique(V(:,1));
+			[~, ~, B{3}] = unique(V(:,2));
+			[~, ~, B{4}] = unique(V(:,3));
+
+			for j=1:4
+				errs(j) = 100*HMM.errors(length(a{j}), A{j}, B{j});
+			end
+		end
+
     % plus: add another track at the end of this one and return a new instance
     % all tracks implicitly start from a random point in the unit box
     % so to join tracks, we translate the other track to start from the
