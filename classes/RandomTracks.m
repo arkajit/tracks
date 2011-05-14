@@ -48,6 +48,12 @@ classdef RandomTracks
       track.V = V;
     end
 
+		function [tracks] = sampleApp(nTracks, app)
+			for i=1:nTracks
+				tracks(i) = RandomTracks.from(app.D, app.V, app.tau);	
+			end
+		end
+
 		function [track] = random(nSteps)
 			if (nargin == 0)
 				nSteps = 100;
@@ -100,44 +106,52 @@ classdef RandomTracks
 			track = RandomTracks.from(D, V, tau);
 		end
 
-    function [track] = diffusion(nSteps, diffusionCoeff, tau)
+    function [tracks] = diffusion(nTracks, nSteps, diffusionCoeff, tau)
       D = diffusionCoeff*ones(nSteps,1);
       V = zeros(nSteps, 3);
-      track = RandomTracks.from(D, V, tau);
+			for i=1:nTracks
+      	tracks(i) = RandomTracks.from(D, V, tau);
+			end
     end
     
-    function [track] = flow(nSteps, velocity, tau)
+    function [tracks] = flow(nTracks, nSteps, velocity, tau)
       D = zeros(nSteps, 1);
       V = repmat(velocity, nSteps, 1);
-      track = RandomTracks.from(D, V, tau); 
+			for i=1:nTracks
+      	tracks(i) = RandomTracks.from(D, V, tau); 
+			end
     end
 
-    function [track] = diffStep(nSteps, d1, d2, tau) 
+    function [tracks] = diffStep(nTracks, nSteps, d1, d2, tau) 
       n = randi([floor(nSteps/4) floor(3*nSteps/4)]); % random step point
 
       D1 = d1*ones(n,1);
       V1 = zeros(n, 3);
-      t1 = RandomTracks.from(D1, V1, tau);
 
       D2 = d2*ones(nSteps-n,1);
       V2 = zeros(nSteps-n, 3);
-      t2 = RandomTracks.from(D2, V2, tau);
-    
-      track = t1+t2;
+   
+			for i=1:nTracks
+      	t1 = RandomTracks.from(D1, V1, tau);
+      	t2 = RandomTracks.from(D2, V2, tau);
+				tracks(i) = t1+t2;
+			end 
     end
 
-    function [track] = step(nSteps, diffusionCoeff, xvel1, xvel2, tau) 
+    function [tracks] = step(nTracks, nSteps, diffusionCoeff, xvel1, xvel2, tau) 
       n = randi([floor(nSteps/4) floor(3*nSteps/4)]); % random step point
 
       D1 = diffusionCoeff*ones(n,1);
       V1 = repmat([xvel1 0.1 0.1], n, 1);
-      t1 = RandomTracks.from(D1, V1, tau);
 
       D2 = diffusionCoeff*ones(nSteps-n,1);
       V2 = repmat([xvel2 0.1 0.1], nSteps-n, 1);
-      t2 = RandomTracks.from(D2, V2, tau);
     
-      track = t1+t2;
+      for i=1:nTracks
+				t1 = RandomTracks.from(D1, V1, tau);
+				t2 = RandomTracks.from(D2, V2, tau);
+				tracks(i) = t1+t2;
+			end
     end
 
     function [track] = fromParams(nSteps, Dmax, Vmax, tau, smooth) 
