@@ -195,7 +195,7 @@ classdef CHMM < HMM
 				x = X(:,i);
 				log_a = self.forward(x);
 				log_b = self.backward(x);
-				probX = log_sum_exp(log_a(:,end),1);
+				probX = logsumexp(log_a(:,end),1);
 				loglik = loglik + probX;
 
 				%% calculate update weights

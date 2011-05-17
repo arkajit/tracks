@@ -76,7 +76,7 @@ classdef HMM
 
 			for t=2:T
 				log_A = repmat(log_a(:,t-1),1,S);	% each col is log_a(:,t-1)
-				prev = log_sum_exp(log_A+log_M, 1)';
+				prev = logsumexp(log_A+log_M, 1)';
 				log_a(:,t) = prev + log_e(:,t);
 			end
 		end
@@ -93,7 +93,7 @@ classdef HMM
 			for t=T-1:-1:1
 				log_E = repmat(log_e(:,t+1), 1, S);		% SxS
 				log_B = repmat(log_b(:,t+1), 1, S);		% SxS
-				log_b(:,t) = log_sum_exp(log_M + log_E' + log_B', 2);
+				log_b(:,t) = logsumexp(log_M + log_E' + log_B', 2);
 			end
 		end
 
