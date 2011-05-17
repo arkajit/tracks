@@ -15,13 +15,13 @@ title('True HMM');
 
 %% Training
 Ntrain = 10;
-Nrestarts = 9;
-Niters = 500;
+Nrestarts = 0;
+Niters = 100;
 T = 100; 	% length of sequences
 
 [X] = hmm.sample(Ntrain, T);
 
-disp('Training with EM...');
+fprintf('Training with EM...\n');
 tic;
 
 hmm0 = CHMM.random(S, 5, 3);
@@ -32,7 +32,7 @@ logliks = nan(Niters, Nrestarts+1);
 
 % do several restarts of HMM
 for i=1:Nrestarts
-	disp(sprintf('EM restart %d', i));
+	fprintf('EM restart %d', i);
 	hmm0 = CHMM.random(S, 5, 3);
 	[hmm1, L1, logliks(:,i+1)] = hmm0.em(X, Niters);
 	if (L1 > L)
@@ -54,12 +54,12 @@ title('Estimated HMM');
 %% Testing
 Ntest = 10;
 [X, Z] = hmm.sample(Ntest, T);
-disp('Testing...');
+fprintf('Testing...');
 tic;
 Zest = hmm_est.infer(X);
 toc
 
-disp('Computing errors...');
+fprintf('Computing errors...\n');
 errs = zeros(Ntest, 1);
 for i=1:Ntest
 	zest = Zest(:,i); 	% states already sorted by mean
