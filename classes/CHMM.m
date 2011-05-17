@@ -6,18 +6,18 @@ classdef CHMM < HMM
 		means 		% means of states
 		stddevs 	% standard deviations of states	
 		options		% learning options
+		S
 	end
 
 	properties (Dependent)
-		S
 		pi
 		M
 	end
 
 	methods 			% property getters
-		function S = get.S(self)
-			S = self.chain.S;
-		end
+		%function S = get.S(self)
+	%		S = self.chain.S;
+	%	end
 
 		function pi = get.pi(self)
 			pi = self.chain.start;
@@ -84,6 +84,7 @@ classdef CHMM < HMM
 
 		function self = CHMM(mc, means, stddevs, options)
 			self.chain = mc;
+			self.S = mc.S;
 			[self.means, order] = sort(means);
 			self.stddevs = stddevs(order);	
 			if (length(self.means) ~= self.chain.S || ...
@@ -101,12 +102,13 @@ classdef CHMM < HMM
 			end
 		end
 
-		% emission function
-		function prob = E(self, s, x)
-			prob = normpdf(x, self.means(s), self.stddevs(s));
-			if isnan(prob)
-				prob = double(x == self.means(s));
-			end	
+		% emission matrix: assumes x is a column vector
+		function probs = Es(self, x)
+			T = length(x);
+			probs = zeros(self.S, T);
+			probs = normpdf(repmat(x', self.S, 1), ...
+											repmat(self.means, 1, T), ...
+											repmat(self.stddevs, 1, T));
 		end
 
 		% sampling the emission function
@@ -213,11 +215,13 @@ classdef CHMM < HMM
 
 				%% update transition counts
 				if (self.options.learnTrans)
+					log_e = log(self.Es(x));
+					log_M = log(self.M);
 					for t=1:T-1	
 						log_A = repmat(log_a(:,t),1,S);
 						log_B = repmat(log_b(:,t+1),1,S);
-						log_E = repmat(self.log_Es(x(t+1)),1,S);
-						NM = NM + norm_exp(log_A+self.log_M+log_E'+log_B'); 
+						log_E = repmat(log_e(:,t+1),1,S);
+						NM = NM + norm_exp(log_A+log_M+log_E'+log_B'); 
 					end
 				end
 
