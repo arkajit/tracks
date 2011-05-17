@@ -1,6 +1,10 @@
 classdef HMMSolver < TrackSolver
 	% represents the logic used to solve a Track using an HMM
 
+	properties (Constant)
+		isState = true;
+	end
+
 	properties
 		S 				% expected number of states
 		hmms			% list of hmms for each dimension

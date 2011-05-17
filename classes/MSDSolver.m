@@ -2,13 +2,14 @@ classdef MSDSolver < TrackSolver
 
 	properties (Constant)
     opts = statset('FunValCheck', 'off'); 
+		isState = false;
 	end
 
 	properties
 		isRolling
 		M						% window size in frames
 		sigAlpha
-		sigPhi	
+		sigPhi
 	end
 
 	methods (Static)

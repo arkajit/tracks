@@ -1,5 +1,9 @@
 classdef SimpleHMMSolver < TrackSolver
 
+	properties (Constant)
+		isState = true;
+	end
+
 	properties
 		Dmax
 		Vmax
