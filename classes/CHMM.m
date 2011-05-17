@@ -135,13 +135,15 @@ classdef CHMM < HMM
 		% @param 		maxIter	int					max number of EM iterations (default: 10)
 		% @return 	hmm 		CHMM
 		% @return 	L				double			log-likelihood
-		function [hmm, L] = em(self, X, maxIter)
+		function [hmm, L, logliks] = em(self, X, maxIter)
 			if (nargin < 3)
 				maxIter = 10;
 			end
+			logliks = nan(maxIter, 1);		
 
 			disp('Starting EM...');
 			[hmm, L] = self.one_em_iter(X);
+			logliks(1) = L;
 			disp(sprintf('Initial loglik = %f', L));
 
 			L0 = L-abs(L);
@@ -151,6 +153,7 @@ classdef CHMM < HMM
 				[hmm, L] = hmm.one_em_iter(X);
 				disp(sprintf('Iter %d loglik = %f', iter, L));
 				iter = iter + 1;
+				logliks(iter) = L;
 			end
 
 			disp(sprintf('Final loglik = %f', L));
