@@ -18,9 +18,10 @@ classdef TrackApps
 			app.tau = 1;
 		end
 
-		function app = velstep(d, xv)
+		% normalize D to 1, xv = delta v_x
+		function app = velstep(xv)
 			T = TrackApps.T;
-			app.D = d*ones(T, 1);
+			app.D = ones(T, 1);
 			app.V = [[zeros(0.5*T, 1); xv*ones(0.5*T, 1)] [zeros(T,2)]];
 			app.tau = 1;
 		end
