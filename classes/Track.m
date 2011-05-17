@@ -187,6 +187,8 @@ classdef Track
 
 			if (useMag)
 				errs(2) = Track.percentError(self.normV, V);
+				errs(3) = NaN;
+				errs(4) = NaN;
 			else
 				for j=1:3
 					errs(j+1) = Track.percentError(self.V(:,j), V(:,j));
@@ -197,18 +199,24 @@ classdef Track
 
 		% percent error between state labels
 		function [errs] = compareStates(self, D, V)
-			[~, a{1}, A{1}] = unique(self.D);
-			[~, a{2}, A{2}] = unique(self.V(:,1));
-			[~, a{3}, A{3}] = unique(self.V(:,2));
-			[~, a{4}, A{4}] = unique(self.V(:,3));
+			[a{1}, ~, A{1}] = unique(self.D);
+			[a{2}, ~, A{2}] = unique(self.V(:,1));
+			[a{3}, ~, A{3}] = unique(self.V(:,2));
+			[a{4}, ~, A{4}] = unique(self.V(:,3));
 
-			[~, ~, B{1}] = unique(D);
-			[~, ~, B{2}] = unique(V(:,1));
-			[~, ~, B{3}] = unique(V(:,2));
-			[~, ~, B{4}] = unique(V(:,3));
+			[b{1}, ~, B{1}] = unique(D);
+			[b{2}, ~, B{2}] = unique(V(:,1));
+			[b{3}, ~, B{3}] = unique(V(:,2));
+			[b{4}, ~, B{4}] = unique(V(:,3));
 
 			for j=1:4
-				errs(j) = 100*HMM.errors(length(a{j}), A{j}, B{j});
+				errs(j) = sum(A{j} ~= B{j});
+				%alen = length(a{j});
+				%blen = length(b{j});
+				%fprintf('j = %d...', j);
+				%fprintf('a = %d, b = %d.', alen, blen);
+				%errs(j) = 100*HMM.errors(max(alen, blen), A{j}, B{j});
+				%fprintf('Done.\n');
 			end
 		end
 
