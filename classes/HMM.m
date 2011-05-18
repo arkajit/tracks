@@ -50,8 +50,8 @@ classdef HMM
 			log_v(:,1) = log(self.pi) + log_e(:,1);	
 
 			for t=2:T
-				log_V = repmat(log_v(:,t-1),1,S); % each col is log_v(:,t-1)
-				best = max(log_V+log_M,[],1)';
+				%log_V = repmat(log_v(:,t-1),1,S); % each col is log_v(:,t-1)
+				best = max(bsxfun(@plus, log_v(:,t-1), log_M),[],1)';
 				log_v(:,t) = best + log_e(:,t);
 			end
 
@@ -75,8 +75,8 @@ classdef HMM
 			log_a(:,1) = log(self.pi) + log_e(:,1);
 
 			for t=2:T
-				log_A = repmat(log_a(:,t-1),1,S);	% each col is log_a(:,t-1)
-				prev = logsumexp(log_A+log_M, 1)';
+				%log_A = repmat(log_a(:,t-1),1,S);	% each col is log_a(:,t-1)
+				prev = logsumexp(bsxfun(@plus, log_a(:,t-1), log_M), 1)';
 				log_a(:,t) = prev + log_e(:,t);
 			end
 		end
@@ -91,9 +91,11 @@ classdef HMM
 			% Init: b(:,T) = 1 => log_b(:,T) = 0
 
 			for t=T-1:-1:1
-				log_E = repmat(log_e(:,t+1), 1, S);		% SxS
-				log_B = repmat(log_b(:,t+1), 1, S);		% SxS
-				log_b(:,t) = logsumexp(log_M + log_E' + log_B', 2);
+				%log_E = repmat(log_e(:,t+1), 1, S);		% SxS
+				%log_B = repmat(log_b(:,t+1), 1, S);		% SxS
+				log_a = log_e(:,t+1) + log_b(:,t+1);
+				%log_b(:,t) = logsumexp(log_M + log_E' + log_B', 2);
+				log_b(:,t) = logsumexp(bsxfun(@plus, log_a', log_M), 2);
 			end
 		end
 
