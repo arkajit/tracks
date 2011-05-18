@@ -1,7 +1,6 @@
-function [out] = runsolvers(app, Dmax, Vmax, K)
+function [out] = runsolvers(N, app, Dmax, Vmax, K)
 
-	N = 100;
-	T = 100;
+	T = 100; % default from TrackApps.T
 
 	tic;
 	fprintf('Sampling tracks. Initializing solvers.\n');
