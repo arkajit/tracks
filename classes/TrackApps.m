@@ -33,12 +33,12 @@ classdef TrackApps
 			app.tau = 1;
 		end
 
-    function app = pulse(d, xv, t)
-			T = TrackApps.T;
-			t1 = 0.3*T;
+    function app = pulse(xv, t)
+			T = 200;
+			t1 = 0.25*T;
 			t2 = t1+t;
-			app.D = [ones(t1, 1); ones(t, 1); ones(T-t2, 1)];
-			app.V = [[zeros(t1, 1); xv*ones(t,1); ones(T-t2, 1)] [zeros(T,2)]];
+			app.D = ones(T, 1);
+			app.V = [[zeros(t1, 1); xv*ones(t,1); zeros(T-t2, 1)] [zeros(T,2)]];
 			app.tau = 1;
     end
 	end
