@@ -98,6 +98,16 @@ classdef HMMSolver < TrackSolver
 			errs = track.compare(D(:,1), V);
 		end
 
+		function plotNormals(self)
+			if (~ isempty(self.hmms))
+				figure;
+				for i=1:3
+					subplot(3,1,i);
+					self.hmms(i).plotNormals();
+				end
+			end
+		end
+
 		% Select the ML HMM that explains the observed tracks.
 		% Require all tracks to have the same timestep.
 		% 
@@ -105,13 +115,17 @@ classdef HMMSolver < TrackSolver
 		% @param maxIter	int					number of EM iterations
 		%
 		%	@return	LL				vec					log-likelihood in each dimension
-		function LL = train(self, tracks)
+		function LL = train(self, tracks, Nr, Ni)
+			if (nargin < 3)
+				Nr = 2; 	% restarts
+				Ni = 15;	% iters
+			end
 			[X,Y,Z] = HMMSolver.readTracks(tracks);
 			self.hmms = CHMM.empty(3,0);
 			LL = zeros(3, 1);
-			[self.hmms(1), LL(1)] = CHMM.fit(self.S(1), X, self.options);
-			[self.hmms(2), LL(2)] = CHMM.fit(self.S(2), Y, self.options);
-			[self.hmms(3), LL(3)] = CHMM.fit(self.S(3), Z, self.options);
+			[self.hmms(1), LL(1)] = CHMM.fit(self.S(1), X, self.options, Nr, Ni);
+			[self.hmms(2), LL(2)] = CHMM.fit(self.S(2), Y, self.options, Nr, Ni);
+			[self.hmms(3), LL(3)] = CHMM.fit(self.S(3), Z, self.options, Nr, Ni);
 		end
 
 	end
