@@ -59,7 +59,7 @@ classdef CHMM < HMM
 			end
 
 			if (nargin < 5)
-				maxIter = 10;	
+				maxIter = 15;	
 			end
 
 			for i=1:nRestarts
@@ -109,6 +109,7 @@ classdef CHMM < HMM
 			probs = normpdf(repmat(x', self.S, 1), ...
 											repmat(self.means, 1, T), ...
 											repmat(self.stddevs, 1, T));
+			probs(isnan(probs)) = 0;	% non-positive stddevs will give NaNs
 		end
 
 		% sampling the emission function
@@ -134,31 +135,31 @@ classdef CHMM < HMM
 		%	Returns the HMM that maximizes the likelihood of the observed data.
 		% 
 		%	@param 		X 			mat					T x N
-		% @param 		maxIter	int					max number of EM iterations (default: 10)
+		% @param 		maxIter	int					max number of EM iterations (default: 15)
 		% @return 	hmm 		CHMM
 		% @return 	L				double			log-likelihood
 		function [hmm, L, logliks] = em(self, X, maxIter)
 			if (nargin < 3)
-				maxIter = 10;
+				maxIter = 15;
 			end
 			logliks = nan(maxIter, 1);		
 
-			disp('Starting EM...');
+			fprintf('Starting EM...\n');
 			[hmm, L] = self.one_em_iter(X);
 			logliks(1) = L;
-			disp(sprintf('Initial loglik = %f', L));
+			fprintf('Initial loglik = %f\n', L);
 
 			L0 = L-abs(L);
 			iter = 1;
 			while (iter < maxIter && L-L0 > abs(L)*1e-6)
 				L0 = L;
 				[hmm, L] = hmm.one_em_iter(X);
-				disp(sprintf('Iter %d loglik = %f', iter, L));
+				fprintf('Iter %d loglik = %f\n', iter, L);
 				iter = iter + 1;
 				logliks(iter) = L;
 			end
 
-			disp(sprintf('Final loglik = %f', L));
+			fprintf('Final loglik = %f\n', L);
 		end
 
 	end
@@ -166,7 +167,9 @@ classdef CHMM < HMM
 	methods (Access=private)
 
 		% Perform one iteration of EM starting from current model (self).
-		% Return a new model with increased likelihood.
+		% Return a new model with increased likelihood. If there are too many
+		% states in the model, may eliminate extra states by having NaNs for means
+		% and stddevs.
 		%
 		% @param 	X 			mat		T x N		N training examples of length T
 		%	@return hmm			CHMM
@@ -196,6 +199,9 @@ classdef CHMM < HMM
 				log_a = self.forward(x);
 				log_b = self.backward(x);
 				probX = logsumexp(log_a(:,end),1);
+				if (isnan(probX))
+					fprintf('Error: probabilities are not numbers!\n');
+				end
 				loglik = loglik + probX;
 
 				%% calculate update weights
