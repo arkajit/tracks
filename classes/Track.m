@@ -210,7 +210,7 @@ classdef Track
 			[b{4}, ~, B{4}] = unique(V(:,3));
 
 			for j=1:4
-				errs(j) = sum(A{j} ~= B{j});
+				errs(j) = sum(A{j} ~= B{j}) / length(A{j});
 				%alen = length(a{j});
 				%blen = length(b{j});
 				%fprintf('j = %d...', j);
@@ -218,6 +218,7 @@ classdef Track
 				%errs(j) = 100*HMM.errors(max(alen, blen), A{j}, B{j});
 				%fprintf('Done.\n');
 			end
+			errs = 100*errs; % to make it percent error
 		end
 
     % plus: add another track at the end of this one and return a new instance
