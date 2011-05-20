@@ -2,5 +2,29 @@ A collection of MATLAB classes and scripts for my thesis. Divided into a few
 directories:
 
 classes/
-data/
+	The main objects and models in my system. Contains implementation of HMM
+	and MSD algorithms, as well as useful representations of a Track.
+
 scripts/
+	A set of utility scripts to run experiments, generate figures, etc...
+
+data/
+	MATLAB .mat files of data from previous experiment runs.
+
+To speed up some of the computations in this package, it is recommended that you
+install
+	--lightspeed: for a faster logsumexp (local copy included) and repmat
+	 (http://research.microsoft.com/en-us/um/people/minka/software/lightspeed/)
+
+	--Double Class: faster replacements for MATLAB's basic functions
+		(http://documents.epfl.ch/users/l/le/leuteneg/www/MATLABToolbox/DoubleClass.html)
+
+>> test_em
+	Run a quick test to verify that EM algorithm is working. Results should show
+true and actual HMM distributions which should match closely if EM is working
+and has converged.
+
+>> demo
+	Run through entire suite of test applications. Compute BIC scores for each and
+run each algorithm on all applications. Report results and generate figures.
+Caution: can take a while.
