@@ -1,15 +1,17 @@
 %% Train several cHMM models with different number of states, compare BIC scores
-function [out] = bictrain(N, T, app)
+%		Sample N tracks to measure the LL required to compute BIC.
+function [out] = bictrain(N, app)
 
-n = N*T; 	% number of observations
-K = 7; 		% maximum number of states
+T = size(app.D, 1); 				% number of steps in a track
+n = N*T; 										% number of observations
+K = 7; 											% maximum number of states
 
-Nrestarts = 2;
-Niters = 30;
+Nrestarts = 2;							% number of times to restart EM
+Niters = 30;								% number of times to run EM
 
-out.LL = zeros(K, 3);
-out.bic = zeros(K, 3);
-out.aic = zeros(K, 3);
+out.LL = zeros(K, 3);				% log-likelihood scores
+out.bic = zeros(K, 3);			% BIC scores
+out.aic = zeros(K, 3);			% AIC scores
 
 tic;
 fprintf('Generating training data.\n');
