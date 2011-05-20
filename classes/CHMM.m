@@ -49,7 +49,7 @@ classdef CHMM < HMM
 			hmm.chain = MarkovChain.fromOdds(S, odds);
 		end
 
-		function [hmm, L] = fit(S, X, options, nRestarts, maxIter)
+		function [hmm, L, hmms] = fit(S, X, options, nRestarts, maxIter)
 			if (nargin < 3)
 				options = [];
 			end
@@ -63,7 +63,7 @@ classdef CHMM < HMM
 			end
 
 			for i=1:nRestarts
-				disp(sprintf('EM restart %d: ', i));
+				fprintf('EM restart %d: \n', i);
 				if (isstruct(options))
 					hmm0 = CHMM.fromOdds(S);
 					hmm0.options = options;
@@ -71,6 +71,7 @@ classdef CHMM < HMM
 					hmm0 = CHMM.random(S);
 				end
 				[hmm1, L1] = hmm0.em(X, maxIter);	
+				hmms(i) = hmm1;
 				if (i == 1 || isnan(L) || L1 > L)
 					hmm = hmm1;
 					L = L1;
@@ -151,14 +152,24 @@ classdef CHMM < HMM
 
 			L0 = L-abs(L);
 			iter = 1;
+            % immediately stop if log likelihood ever decreases
 			while (iter < maxIter && L-L0 > abs(L)*1e-6)
 				L0 = L;
+				hmm0 = hmm;
 				[hmm, L] = hmm.one_em_iter(X);
+				if (L-L0 < 0)
+					fprintf('**');
+				end
 				fprintf('Iter %d loglik = %f\n', iter, L);
 				iter = iter + 1;
 				logliks(iter) = L;
 			end
-
+			
+			if (L-L0 < 0)
+				L = L0;
+				hmm = hmm0;
+				fprintf('Loglik decreased. Revert to last loglik.\n');
+			end
 			fprintf('Final loglik = %f\n', L);
 		end
 
