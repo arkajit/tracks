@@ -6,8 +6,9 @@ T = size(app.D, 1); 				% number of steps in a track
 n = N*T; 										% number of observations
 K = 7; 											% maximum number of states
 
-Nrestarts = 2;							% number of times to restart EM
-Niters = 30;								% number of times to run EM
+% if not specified, use EM defaults of 2x15 iterations
+%Nrestarts = 2;							% number of times to restart EM
+%Niters = 30;								% number of times to run EM
 
 out.LL = zeros(K, 3);				% log-likelihood scores
 out.bic = zeros(K, 3);			% BIC scores
@@ -25,6 +26,9 @@ for k=1:K
 	out.bic(k,:) = out.LL(k,:) - 0.5 * deg * log(n);
 	out.aic(k,:) = out.LL(k,:) - deg;
 end
+
+[~,I] = max(out.bic);
+out.Kstar = I'; 	% x,y,z states with Best BIC scores
 
 %plot results
 figure;
