@@ -88,7 +88,6 @@ classdef MSDSolver < TrackSolver
       msdR = MSDSolver.msds3D(R, i, M);
       X = (1:size(msdR, 1))';
       beta = nlinfit(X, msdR, fitFunc, b0, MSDSolver.opts);
-      plot(X, [msdR, fitFunc(beta, X)]);
     end
 
     function [stddev] = angleCorrelation(angles, i, M)
