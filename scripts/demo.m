@@ -16,7 +16,9 @@ apps(1) = ta.diff();												% DIFF
 apps(2) = ta.diffstep(diff);								% DIFFSTEP
 apps(3) = ta.velstep(vel);									% VELSTEP
 apps(4) = ta.diffvelstep(diff, vel);				% DIFFVELSTEP
-apps(5) = TrackApps(2*T).pulse(diff, dur); 	% PULSE (need longer tracks)
+
+ta.T = 2*T;
+apps(5) = ta.pulse(diff, dur); 							% PULSE (need longer tracks)
 
 % Learn cHMM model size
 fprintf('Model Selection with BIC\n');
@@ -31,5 +33,5 @@ VMAX = vel+1;
 
 for i=1:5
 	fprintf('Solving app %i: %s\n', i, apps(i).name);
-	out(i) = runsolvers(N, app(i), DMAX, VMAX, models(i).Kstar);
+	out(i) = runsolvers(N, apps(i), DMAX, VMAX, models(i).Kstar);
 end

@@ -6,9 +6,8 @@ T = size(app.D, 1); 				% number of steps in a track
 n = N*T; 										% number of observations
 K = 7; 											% maximum number of states
 
-% if not specified, use EM defaults of 2x15 iterations
-%Nrestarts = 2;							% number of times to restart EM
-%Niters = 30;								% number of times to run EM
+Nrestarts = 2;							% number of times to restart EM
+Niters = 30;								% number of times to run EM
 
 out.LL = zeros(K, 3);				% log-likelihood scores
 out.bic = zeros(K, 3);			% BIC scores
@@ -37,6 +36,7 @@ labs = {'LL_x', 'LL_y', 'LL_z', 'BIC_x', 'BIC_y', 'BIC_z'};
 legend(labs, 'FontSize', 12, 'Location', 'Best');
 xlabel('K (# states)', 'FontSize', 16);
 ylabel('Normalized Max. Log Likelihood (LL), BIC', 'FontSize', 16);
+title(sprintf('BIC Scores for %s application', app.name));
 
 toc
 
