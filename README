@@ -1,4 +1,4 @@
-A collection of MATLAB classes and scripts for my thesis. Divided into a few
+A collection of MATLAB classes and scripts for my thesis. Divided into two main
 directories:
 
 classes/
@@ -7,9 +7,6 @@ classes/
 
 scripts/
 	A set of utility scripts to run experiments, generate figures, etc...
-
-data/
-	MATLAB .mat files of data from previous experiment runs.
 
 To speed up some of the computations in this package, it is recommended that you
 install
